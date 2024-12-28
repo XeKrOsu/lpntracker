@@ -1,0 +1,1081 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Les Pneus Normaux - Tracker</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script src="storage.js"></script>
+    <style>
+        :root {
+            --bg-color: #f4f4f9;
+            --text-color: #333;
+            --table-border: #ddd;
+            --table-header: #f2f2f2;
+            --modal-bg: #fff;
+        }
+
+        [data-theme="dark"] {
+            --bg-color: #1a1a1a;
+            --text-color: #fff;
+            --table-border: #444;
+            --table-header: #2d2d2d;
+            --modal-bg: #2d2d2d;
+        }
+
+        * {
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+        h1, h2 {
+            color: #444;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        table, th, td {
+            border: 1px solid var(--table-border);
+        }
+        th, td {
+            padding: 12px;
+            text-align: left;
+        }
+        th {
+            background-color: var(--table-header);
+        }
+        .form-container {
+            background-color: #fff;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+        input[type="text"], input[type="number"], select {
+            width: 100%;
+            padding: 10px;
+            margin: 5px 0 10px 0;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        .container {
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            margin: 20px;
+        }
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background-color: #4CAF50;
+            color: white;
+            padding: 15px;
+            border-radius: 5px;
+            z-index: 1000;
+        }
+        .notification .close {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 20px;
+            margin-left: 10px;
+            cursor: pointer;
+        }
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.9);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+        }
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid #3498db;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .last-update {
+            background-color: var(--table-header);
+            padding: 10px;
+            margin-bottom: 20px;
+            border-radius: 5px;
+        }
+
+        .theme-switch {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+        }
+        h1, h2, label, .modal-title {
+            color: var(--text-color);
+        }
+
+        .modal-content {
+            background-color: var(--modal-bg);
+            color: var(--text-color);
+        }
+
+        table {
+            background-color: var(--bg-color);
+        }
+
+        th, td {
+            color: var(--text-color);
+        }
+
+        .last-update {
+            color: var(--text-color);
+            background-color: var(--table-header);
+        }
+
+        .form-control {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            border-color: var(--table-border);
+        }
+
+        .form-control:focus {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+        }
+
+        .close {
+            color: var(--text-color);
+        }
+
+        .theme-switch {
+            color: var(--text-color);
+        }
+
+        .admin-only {
+            transition: opacity 0.3s ease;
+        }
+
+        [data-admin="false"] .admin-only {
+            display: none;
+        }
+
+        /* Add responsive styles */
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+                margin: 10px;
+            }
+            
+            table {
+                display: block;
+                overflow-x: auto;
+            }
+            
+            .mobile-login {
+                position: fixed;
+                bottom: 20px;
+                right: 20px;
+                z-index: 1000;
+            }
+            
+            .mobile-login button {
+                width: 50px;
+                height: 50px;
+                padding: 0;
+                box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h1>Les Pneus Normaux - Tracker</h1>
+            <div class="theme-switch">
+                <input type="checkbox" id="themeSwitch">
+                <label for="themeSwitch">Mode sombre</label>
+            </div>
+        </div>
+
+        <div class="last-update mb-3" id="lastUpdate">
+            Dernière mise à jour: Aucune
+        </div>
+
+        <div class="d-flex mb-3">
+            <button type="button" class="btn btn-primary mr-2" data-toggle="modal" data-target="#addEmployeeModal">
+                Ajouter un Employé
+            </button>
+            <button type="button" class="btn btn-secondary" onclick="copyToDiscord()">
+                Copier pour Discord
+            </button>
+        </div>
+        <hr>
+        <h2>Employés</h2>
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>
+                        Pseudo 
+                        <i class="fas fa-sort" onclick="sortEmployees('pseudo')" style="cursor: pointer;"></i>
+                    </th>
+                    <th>
+                        Jours Restants 
+                        <i class="fas fa-sort" onclick="sortEmployees('days')" style="cursor: pointer;"></i>
+                    </th>
+                    <th>
+                        Dernière Mission 
+                        <i class="fas fa-sort" onclick="sortEmployees('lastMission')" style="cursor: pointer;"></i>
+                    </th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="employeeTable">
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Modal Ajout Employé -->
+    <div class="modal fade" id="addEmployeeModal" tabindex="-1" aria-labelledby="addEmployeeModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addEmployeeModalLabel">Ajouter un Employé</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form id="addEmployeeForm">
+                        <div class="form-group">
+                            <label for="pseudo">Pseudo:</label>
+                            <input type="text" class="form-control" id="pseudo" name="pseudo" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="startDate">Date d'entrée:</label>
+                            <input type="date" class="form-control" id="startDate" name="startDate" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="probation">
+                                <input type="checkbox" id="probation" name="probation">
+                                En Période Probatoire
+                            </label>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Ajouter</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Ajouter une mission Modal -->
+    <div class="modal fade" id="addMissionModal" tabindex="-1" aria-labelledby="addMissionModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addMissionModalLabel">Ajouter une Mission</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form id="addMissionForm">
+                        <label for="employee">Employé:</label>
+                        <select id="employee" name="employee" required></select>
+                        <label for="date">Date:</label>
+                        <input type="date" id="date" name="date" required>
+                        <label for="kilometers">Kilomètres:</label>
+                        <input type="number" id="kilometers" name="kilometers" required>
+                        <button type="submit" class="btn btn-primary">Ajouter</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Détails de l'Employé Modal -->
+    <div class="modal fade" id="employeeDetailsModal" tabindex="-1" aria-labelledby="employeeDetailsModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="employeeDetailsModalLabel">Détails de l'Employé</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form id="employeeDetailsForm">
+                        <label for="detailsPseudo">Pseudo:</label>
+                        <input type="text" id="detailsPseudo" name="detailsPseudo" readonly>
+                        <div>
+                            <strong>Jours Restants:</strong> <span id="detailsDaysRemaining"></span>
+                        </div>
+                        <div>
+                            <strong>Date de la Dernière Mission:</strong> <span id="detailsLastMissionDate"></span>
+                        </div>
+                        <label for="detailsProbation">En Période Probatoire:</label>
+                        <input type="checkbox" id="detailsProbation" name="detailsProbation">
+                        <div id="kilometersRemainingContainer">
+                            <strong>Kilomètres Restants:</strong> <span id="detailsKilometersRemaining"></span>
+                        </div>
+                        <div class="d-flex justify-content-between mt-3">
+                            <button type="submit" class="btn btn-primary">Mettre à Jour</button>
+                            <button id="deleteEmployeeButton" class="btn btn-danger">Supprimer Employé</button>
+                        </div>
+                    </form>
+                    <hr>
+                    <h5>Ajouter une Mission</h5>
+                    <form id="addMissionFormDetails">
+                        <label for="dateDetails">Date:</label>
+                        <input type="date" id="dateDetails" name="dateDetails" required>
+                        <label for="kilometersDetails">Kilomètres:</label>
+                        <input type="number" id="kilometersDetails" name="kilometersDetails" required>
+                        <button type="submit" class="btn btn-primary">Ajouter</button>
+                    </form>
+                    <hr>
+                    <h5>Missions et Notes</h5>
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Kilomètres</th>
+                                <th>Note</th>
+                            </tr>
+                        </thead>
+                        <tbody id="missionsTableBody">
+                        </tbody>
+                    </table>
+                    <hr>
+                    <h5>Kilomètres Mensuels</h5>
+                    <p id="monthlyKilometers"></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Edit Mission -->
+    <div class="modal fade" id="editMissionModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Modifier la Mission</h5>
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <form id="editMissionForm">
+                        <input type="hidden" id="editMissionIndex">
+                        <input type="hidden" id="editMissionEmployee">
+                        <div class="form-group">
+                            <label>Date:</label>
+                            <input type="date" id="editMissionDate" class="form-control" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Kilomètres:</label>
+                            <input type="number" id="editMissionKm" class="form-control" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Sauvegarder</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add this modal for password input -->
+    <div class="modal fade" id="loginModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Connexion Administrateur</h5>
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <form id="loginForm">
+                        <div class="form-group">
+                            <label>Mot de passe:</label>
+                            <input type="password" id="adminPassword" class="form-control" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Connexion</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add floating login button for mobile -->
+    <div class="mobile-login">
+        <button class="btn btn-secondary rounded-circle">
+            <i class="fas fa-key"></i>
+        </button>
+    </div>
+
+    <div id="notification" class="notification" style="display: none;">
+        <span id="notificationMessage"></span>
+        <button onclick="hideNotification()" class="close">&times;</button>
+    </div>
+
+    <div id="loadingOverlay" class="loading-overlay" style="display: none;">
+        <div class="spinner"></div>
+    </div>
+
+    <script>
+        const ADMIN_HASH = '9903e7a522a805f505017d3593a42602d6bfbbfa82b6bf008558ee6db69ff4a6'; // Hash of 'LesNormauxPneusdeByoo_Arobèse974'
+        const SALT = 'LPN2024'; // Add salt to make rainbow table attacks harder
+
+        async function hashPassword(password) {
+            const encoder = new TextEncoder();
+            const data = encoder.encode(password + SALT);
+            const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+            const hashArray = Array.from(new Uint8Array(hashBuffer));
+            return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+        }
+
+        async function checkAdminPassword() {
+            $('#loginModal').modal('show');
+        }
+
+        // Add login form handler
+        document.getElementById('loginForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const password = document.getElementById('adminPassword').value;
+            
+            const hashedPassword = await hashPassword(password);
+            if (hashedPassword === ADMIN_HASH) {
+                isAdmin = true;
+                sessionStorage.setItem('isAdmin', 'true');
+                showNotification('Mode administrateur activé');
+                updateUIState();
+                $('#loginModal').modal('hide');
+                document.getElementById('adminPassword').value = '';
+            } else {
+                showNotification('Mot de passe incorrect', 'error');
+            }
+        });
+
+        // Add mobile login trigger
+        document.querySelector('.mobile-login button').addEventListener('click', checkAdminPassword);
+
+        // Update authentication check on load
+        document.addEventListener('DOMContentLoaded', function() {
+            isAdmin = sessionStorage.getItem('isAdmin') === 'true';
+            updateUIState();
+        });
+
+        function logout() {
+            isAdmin = false;
+            sessionStorage.removeItem('isAdmin');
+            showNotification('Déconnexion effectuée');
+            updateUIState();
+        }
+
+        let employees = Storage.loadEmployees();
+
+        // Mettre à jour le stockage après chaque modification
+        function updateStorage() {
+            Storage.saveEmployees(employees);
+        }
+
+        // Définir la date du jour par défaut pour le champ date d'entrée
+        document.addEventListener('DOMContentLoaded', function() {
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('startDate').value = today;
+        });
+
+        document.getElementById('addEmployeeForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+            const pseudo = document.getElementById('pseudo').value;
+            const startDate = document.getElementById('startDate').value;
+            const probation = document.getElementById('probation').checked;
+            const newEmployee = {
+                pseudo: pseudo,
+                startDate: startDate,
+                daysRemaining: probation ? 30 : 180,
+                lastMissionDate: 'N/A',
+                missions: [],
+                probation: probation,
+                kilometersRemaining: probation ? 2500 : 0,
+                note: ''
+            };
+            employees.push(newEmployee);
+            updateEmployeeTable();
+            updateStorage();
+            $('#addEmployeeModal').modal('hide');
+            document.getElementById('addEmployeeForm').reset();
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('startDate').value = today;
+            showNotification(`Employé ${pseudo} ajouté avec succès`);
+        });
+
+        function calculateDaysGained(kilometers) {
+            if (kilometers >= 500 && kilometers < 2500) {
+                return 30;
+            } else if (kilometers >= 2500 && kilometers < 10000) {
+                return 30;
+            } else if (kilometers >= 10000 && kilometers < 25000) {
+                return 60;
+            } else if (kilometers >= 25000 && kilometers < 35000) {
+                return 90;
+            } else if (kilometers >= 35000 && kilometers < 50000) {
+                return 120;
+            } else if (kilometers >= 50000 && kilometers < 100000) {
+                return 150;
+            } else if (kilometers >= 100000) {
+                return 180;
+            }
+            return 0;
+        }
+
+        document.getElementById('addMissionFormDetails').addEventListener('submit', function(event) {
+            event.preventDefault();
+            const pseudo = document.getElementById('detailsPseudo').value;
+            const date = document.getElementById('dateDetails').value;
+            const kilometers = parseInt(document.getElementById('kilometersDetails').value);
+            const employee = employees.find(emp => emp.pseudo === pseudo);
+            if (employee) {
+                // Fusion des missions du même mois
+                const newMission = { date, kilometers };
+                employee.missions = mergeMissionsForMonth([...employee.missions, newMission]);
+                employee.lastMissionDate = date;
+                
+                // Recalcul des jours
+                employee.daysRemaining = calculateRemainingDays(employee);
+                
+                updateMissionsTable(employee);
+                updateEmployeeTable();
+                updateStorage();
+                showEmployeeDetails(pseudo);
+                showNotification(`Mission ajoutée pour ${pseudo}`);
+            }
+        });
+
+        document.getElementById('deleteEmployeeButton').addEventListener('click', function() {
+            const pseudo = document.getElementById('detailsPseudo').value;
+            const employeeIndex = employees.findIndex(emp => emp.pseudo === pseudo);
+            if (employeeIndex !== -1) {
+                employees.splice(employeeIndex, 1);
+                updateEmployeeTable();
+                updateStorage();
+                $('#employeeDetailsModal').modal('hide');
+            }
+        });
+
+        function calculateMonthlyKilometers(employee) {
+            const currentMonth = new Date().getMonth();
+            const currentYear = new Date().getFullYear();
+            return employee.missions.reduce((total, mission) => {
+                const missionDate = new Date(mission.date);
+                if (missionDate.getMonth() === currentMonth && missionDate.getFullYear() === currentYear) {
+                    return total + mission.kilometers;
+                }
+                return total;
+            }, 0);
+        }
+
+        function showEmployeeDetails(pseudo) {
+            if (!isAdmin) {
+                // Read-only version
+                const employee = employees.find(emp => emp.pseudo === pseudo);
+                if (employee) {
+                    alert(`Détails de ${employee.pseudo}\n` +
+                          `Jours restants: ${calculateRemainingDays(employee)}\n` +
+                          `Dernière mission: ${employee.lastMissionDate}`);
+                }
+                return;
+            }
+            const employee = employees.find(emp => emp.pseudo === pseudo);
+            if (employee) {
+                document.getElementById('detailsPseudo').value = employee.pseudo;
+                document.getElementById('detailsDaysRemaining').textContent = employee.daysRemaining;
+                document.getElementById('detailsLastMissionDate').textContent = employee.lastMissionDate ? new Date(employee.lastMissionDate).toLocaleDateString('fr-FR') : 'N/A';
+                document.getElementById('detailsProbation').checked = employee.probation;
+                if (employee.probation) {
+                    document.getElementById('kilometersRemainingContainer').style.display = 'block';
+                    document.getElementById('detailsKilometersRemaining').textContent = employee.kilometersRemaining;
+                } else {
+                    document.getElementById('kilometersRemainingContainer').style.display = 'none';
+                }
+                updateMissionsTable(employee);
+                document.getElementById('monthlyKilometers').textContent = `Kilomètres effectués ce mois-ci: ${calculateMonthlyKilometers(employee)}`;
+            }
+        }
+
+        function updateMissionsTable(employee) {
+            const missionsTableBody = document.getElementById('missionsTableBody');
+            missionsTableBody.innerHTML = '';
+            employee.missions.forEach((mission, index) => {
+                const row = document.createElement('tr');
+                const dateCell = document.createElement('td');
+                dateCell.textContent = new Date(mission.date).toLocaleDateString('fr-FR');
+                const kilometersCell = document.createElement('td');
+                kilometersCell.textContent = mission.kilometers;
+                const deleteCell = document.createElement('td');
+                const deleteButton = document.createElement('button');
+                deleteButton.textContent = 'Supprimer';
+                deleteButton.className = 'btn btn-danger btn-sm';
+                deleteButton.onclick = () => deleteMission(employee, index);
+                deleteCell.appendChild(deleteButton);
+                row.appendChild(dateCell);
+                row.appendChild(kilometersCell);
+                row.appendChild(deleteCell);
+                const actionsCell = document.createElement('td');
+                const editButton = document.createElement('button');
+                editButton.textContent = 'Modifier';
+                editButton.className = 'btn btn-warning btn-sm mr-2';
+                editButton.onclick = () => editMission(employee, index);
+                actionsCell.appendChild(editButton);
+                actionsCell.appendChild(deleteButton);
+                row.appendChild(actionsCell);
+                missionsTableBody.appendChild(row);
+            });
+        }
+
+        function calculateRemainingDays(employee) {
+            const today = new Date();
+            const startDate = new Date(employee.startDate);
+            
+            // Si en période probatoire
+            if (employee.probation) {
+                const totalKilometers = employee.missions.reduce((sum, mission) => sum + mission.kilometers, 0);
+                const daysElapsed = Math.floor((today - startDate) / (1000 * 60 * 60 * 24));
+                
+                if (totalKilometers >= 2500) {
+                    employee.probation = false;
+                    return 180;
+                } else {
+                    return 30 - daysElapsed; // Remove Math.max
+                }
+            }
+            
+            // Si pas de missions
+            if (employee.missions.length === 0) {
+                const daysElapsed = Math.floor((today - startDate) / (1000 * 60 * 60 * 24));
+                return 180 - daysElapsed; // Allow negative days
+            }
+            
+            // Trier les missions par date
+            const sortedMissions = [...employee.missions].sort((a, b) => new Date(a.date) - new Date(b.date));
+            let firstMissionDate = new Date(sortedMissions[0].date);
+            let remainingDays = 180;
+            
+            // Calculer les jours pour chaque mission
+            for (let i = 0; i < sortedMissions.length; i++) {
+                const mission = sortedMissions[i];
+                const missionDate = new Date(mission.date);
+                const daysElapsed = Math.floor((missionDate - firstMissionDate) / (1000 * 60 * 60 * 24));
+                remainingDays -= daysElapsed;
+                
+                const daysToAdd = calculateDaysGained(mission.kilometers);
+                remainingDays += daysToAdd;
+                
+                // Limite maximum de 360 jours
+                remainingDays = Math.min(360, remainingDays);
+                firstMissionDate = missionDate;
+            }
+            
+            // Soustraire les jours écoulés depuis la dernière mission
+            const daysElapsedSinceLastMission = Math.floor((today - firstMissionDate) / (1000 * 60 * 60 * 24));
+            remainingDays -= daysElapsedSinceLastMission;
+            
+            return remainingDays; // Allow negative days
+        }
+
+        // Fonction pour fusionner les missions du même mois
+        function mergeMissionsForMonth(missions) {
+            const mergedMissions = new Map();
+            
+            missions.forEach(mission => {
+                const missionDate = new Date(mission.date);
+                const monthKey = `${missionDate.getFullYear()}-${missionDate.getMonth()}`;
+                
+                if (mergedMissions.has(monthKey)) {
+                    const existing = mergedMissions.get(monthKey);
+                    const existingDate = new Date(existing.date);
+                    const newDate = new Date(mission.date);
+                    
+                    mergedMissions.set(monthKey, {
+                        date: newDate > existingDate ? mission.date : existing.date,
+                        kilometers: existing.kilometers + mission.kilometers,
+                        note: existing.note ? `${existing.note}; ${mission.note || ''}` : mission.note || ''
+                    });
+                } else {
+                    mergedMissions.set(monthKey, {...mission});
+                }
+            });
+            
+            return Array.from(mergedMissions.values());
+        }
+
+        function deleteMission(employee, index) {
+            if (confirm('Êtes-vous sûr de vouloir supprimer cette mission ?')) {
+                employee.missions.splice(index, 1);
+                if (employee.missions.length > 0) {
+                    employee.lastMissionDate = employee.missions[employee.missions.length - 1].date;
+                } else {
+                    employee.lastMissionDate = 'N/A';
+                }
+                updateMissionsTable(employee);
+                updateEmployeeTable();
+                updateStorage();
+                showNotification('Mission supprimée');
+            }
+        }
+
+        function formatDaysRemaining(days) {
+            if (days >= 0) {
+                return `${days} jours`;
+            } else {
+                return `${Math.abs(days)} jours de retard`;
+            }
+        }
+
+        function updateEmployeeTable() {
+            const employeeTable = document.getElementById('employeeTable');
+            employeeTable.innerHTML = '';
+            employees.forEach(employee => {
+                // Mettre à jour les jours restants
+                employee.daysRemaining = calculateRemainingDays(employee);
+                
+                const row = document.createElement('tr');
+                const pseudoCell = document.createElement('td');
+                pseudoCell.textContent = employee.pseudo;
+                
+                const daysRemainingCell = document.createElement('td');
+                const formattedDays = formatDaysRemaining(employee.daysRemaining);
+                if (employee.daysRemaining < 0) {
+                    daysRemainingCell.style.color = 'red';
+                }
+                daysRemainingCell.textContent = formattedDays;
+                
+                const lastMissionDateCell = document.createElement('td');
+                lastMissionDateCell.textContent = employee.lastMissionDate !== 'N/A' ? 
+                    new Date(employee.lastMissionDate).toLocaleDateString('fr-FR') : 'N/A';
+                
+                const actionsCell = document.createElement('td');
+                const detailsButton = document.createElement('button');
+                detailsButton.textContent = 'Détails';
+                detailsButton.className = 'btn btn-info';
+                detailsButton.addEventListener('click', () => {
+                    $('#employeeDetailsModal').modal('show');
+                    showEmployeeDetails(employee.pseudo);
+                });
+                
+                actionsCell.appendChild(detailsButton);
+                row.appendChild(pseudoCell);
+                row.appendChild(daysRemainingCell);
+                row.appendChild(lastMissionDateCell);
+                row.appendChild(actionsCell);
+                employeeTable.appendChild(row);
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', async function() {
+            try {
+                // Show loading overlay
+                document.getElementById('loadingOverlay').style.display = 'flex';
+                
+                // Load employees data
+                employees = Storage.loadEmployees();
+                
+                // Update UI
+                updateEmployeeTable();
+                
+                // Hide loading overlay
+                document.getElementById('loadingOverlay').style.display = 'none';
+            } catch (error) {
+                console.error('Error loading data:', error);
+                showNotification('Erreur lors du chargement des données', 'error');
+                document.getElementById('loadingOverlay').style.display = 'none';
+            }
+        });
+
+        // Update notification function to handle error state
+        function showNotification(message, type = 'success') {
+            const notification = document.getElementById('notification');
+            notification.style.display = 'block';
+            notification.style.backgroundColor = type === 'error' ? '#ff4444' : '#4CAF50';
+            document.getElementById('notificationMessage').textContent = message;
+            setTimeout(hideNotification, 3000);
+        }
+
+        function hideNotification() {
+            document.getElementById('notification').style.display = 'none';
+        }
+
+        let currentSort = { field: null, ascending: true };
+
+        function sortEmployees(field) {
+            if (currentSort.field === field) {
+                currentSort.ascending = !currentSort.ascending;
+            } else {
+                currentSort.field = field;
+                currentSort.ascending = true;
+            }
+            
+            employees.sort((a, b) => {
+                let comparison = 0;
+                
+                switch (field) {
+                    case 'pseudo':
+                        comparison = a.pseudo.localeCompare(b.pseudo);
+                        break;
+                    case 'days':
+                        comparison = calculateRemainingDays(a) - calculateRemainingDays(b);
+                        break;
+                    case 'lastMission':
+                        const dateA = a.lastMissionDate === 'N/A' ? new Date(0) : new Date(a.lastMissionDate);
+                        const dateB = b.lastMissionDate === 'N/A' ? new Date(0) : new Date(b.lastMissionDate);
+                        comparison = dateA - dateB;
+                        break;
+                }
+                
+                return currentSort.ascending ? comparison : -comparison;
+            });
+            
+            updateEmployeeTable();
+        }
+
+        function updateEmployeeTable() {
+            const employeeTable = document.getElementById('employeeTable');
+            employeeTable.innerHTML = '';
+            employees.forEach(employee => {
+                const row = document.createElement('tr');
+                const pseudoCell = document.createElement('td');
+                pseudoCell.textContent = employee.pseudo;
+                
+                const daysRemainingCell = document.createElement('td');
+                const remainingDays = calculateRemainingDays(employee);
+                const expiryDate = new Date();
+                expiryDate.setDate(expiryDate.getDate() + remainingDays);
+                daysRemainingCell.textContent = `${remainingDays} (expire le ${expiryDate.toLocaleDateString('fr-FR')})`;
+                if (remainingDays < 0) {
+                    daysRemainingCell.style.color = 'red';
+                }
+                
+                const lastMissionDateCell = document.createElement('td');
+                lastMissionDateCell.textContent = employee.lastMissionDate !== 'N/A' ? 
+                    new Date(employee.lastMissionDate).toLocaleDateString('fr-FR') : 'N/A';
+                
+                const actionsCell = document.createElement('td');
+                const detailsButton = document.createElement('button');
+                detailsButton.textContent = 'Détails';
+                detailsButton.className = 'btn btn-info';
+                detailsButton.addEventListener('click', () => {
+                    $('#employeeDetailsModal').modal('show');
+                    showEmployeeDetails(employee.pseudo);
+                });
+                actionsCell.appendChild(detailsButton);
+                
+                row.appendChild(pseudoCell);
+                row.appendChild(daysRemainingCell);
+                row.appendChild(lastMissionDateCell);
+                row.appendChild(actionsCell);
+                employeeTable.appendChild(row);
+            });
+        }
+
+        // Dark mode toggle
+        const themeSwitch = document.getElementById('themeSwitch');
+        themeSwitch.addEventListener('change', () => {
+            document.body.setAttribute('data-theme', themeSwitch.checked ? 'dark' : 'light');
+            localStorage.setItem('theme', themeSwitch.checked ? 'dark' : 'light');
+        });
+
+        // Load saved theme
+        document.body.setAttribute('data-theme', localStorage.getItem('theme') || 'light');
+        themeSwitch.checked = localStorage.getItem('theme') === 'dark';
+
+        // Update last modification tracker
+        function updateLastModification(employee) {
+            const now = new Date();
+            const formatted = now.toLocaleDateString('fr-FR') + ' ' + now.toLocaleTimeString('fr-FR');
+            document.getElementById('lastUpdate').textContent = 
+                `Dernière mise à jour: ${formatted} - ${employee.pseudo}`;
+        }
+
+        // Copy to Discord
+        function copyToDiscord() {
+            const sortedEmployees = [...employees].sort((a, b) => 
+                calculateRemainingDays(b) - calculateRemainingDays(a));
+            
+            // Calculate maximum lengths for each column
+            let maxPseudoLength = 6; // "Pseudo"
+            let maxDaysLength = 14; // "Jours Restants"
+            let maxDateLength = 11; // "Date de fin"
+            
+            sortedEmployees.forEach(emp => {
+                const days = calculateRemainingDays(emp);
+                const endDate = new Date();
+                endDate.setDate(endDate.getDate() + days);
+                
+                maxPseudoLength = Math.max(maxPseudoLength, emp.pseudo.length);
+                maxDaysLength = Math.max(maxDaysLength, days.toString().length);
+                maxDateLength = Math.max(maxDateLength, endDate.toLocaleDateString('fr-FR').length);
+            });
+            
+            // Create header and separator
+            const header = [
+                'Pseudo'.padEnd(maxPseudoLength),
+                'Jours Restants'.padEnd(maxDaysLength),
+                'Date de fin'.padEnd(maxDateLength)
+            ];
+            
+            const separator = [
+                '-'.repeat(maxPseudoLength),
+                '-'.repeat(maxDaysLength),
+                '-'.repeat(maxDateLength)
+            ];
+            
+            let markdown = "```md\n# Les Pneus Normaux - Employés\n\n";
+            markdown += `| ${header.join(' | ')} |\n`;
+            markdown += `| ${separator.join(' | ')} |\n`;
+            
+            sortedEmployees.forEach(emp => {
+                const days = calculateRemainingDays(emp);
+                const endDate = new Date();
+                endDate.setDate(endDate.getDate() + days);
+                
+                const row = [
+                    emp.pseudo.padEnd(maxPseudoLength),
+                    days.toString().padEnd(maxDaysLength),
+                    endDate.toLocaleDateString('fr-FR').padEnd(maxDateLength)
+                ];
+                
+                markdown += `| ${row.join(' | ')} |\n`;
+            });
+            
+            markdown += "```";
+            
+            navigator.clipboard.writeText(markdown)
+                .then(() => showNotification('Tableau copié pour Discord'));
+        }
+
+        function editMission(employee, index) {
+            const mission = employee.missions[index];
+            document.getElementById('editMissionIndex').value = index;
+            document.getElementById('editMissionEmployee').value = employee.pseudo;
+            document.getElementById('editMissionDate').value = mission.date;
+            document.getElementById('editMissionKm').value = mission.kilometers;
+            $('#editMissionModal').modal('show');
+        }
+
+        document.getElementById('editMissionForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+            const index = document.getElementById('editMissionIndex').value;
+            const pseudo = document.getElementById('editMissionEmployee').value;
+            const employee = employees.find(emp => emp.pseudo === pseudo);
+            
+            if (employee) {
+                employee.missions[index] = {
+                    date: document.getElementById('editMissionDate').value,
+                    kilometers: parseInt(document.getElementById('editMissionKm').value)
+                };
+                updateMissionsTable(employee);
+                updateEmployeeTable();
+                updateStorage();
+                updateLastModification(employee);
+                $('#editMissionModal').modal('hide');
+                showNotification('Mission modifiée avec succès');
+            }
+        });
+
+        // Check admin state on load
+        document.addEventListener('DOMContentLoaded', function() {
+            isAdmin = localStorage.getItem('isAdmin') === 'true';
+            updateUIState();
+        });
+
+        // Update UI based on admin state
+        function updateUIState() {
+            const adminElements = document.querySelectorAll('.admin-only');
+            adminElements.forEach(el => {
+                el.style.display = isAdmin ? '' : 'none';
+            });
+        }
+
+        // Add admin-only class to interactive elements
+        document.querySelectorAll('button:not(.theme-switch)').forEach(btn => {
+            btn.classList.add('admin-only');
+        });
+
+        // Add hidden admin login trigger
+        document.addEventListener('keydown', function(e) {
+            if (e.ctrlKey && e.altKey && e.key === 'a') {
+                checkAdminPassword();
+            }
+        });
+
+        // Logout function
+        function logout() {
+            isAdmin = false;
+            localStorage.removeItem('isAdmin');
+            showNotification('Déconnexion effectuée');
+            updateUIState();
+        }
+
+        // Add logout button for admin
+        const logoutBtn = document.createElement('button');
+        logoutBtn.textContent = 'Déconnexion';
+        logoutBtn.className = 'btn btn-secondary admin-only';
+        logoutBtn.onclick = logout;
+        document.querySelector('.d-flex.mb-3').appendChild(logoutBtn);
+
+        // Update existing functions to check admin state
+        function showEmployeeDetails(pseudo) {
+            if (!isAdmin) {
+                // Read-only version
+                const employee = employees.find(emp => emp.pseudo === pseudo);
+                if (employee) {
+                    alert(`Détails de ${employee.pseudo}\n` +
+                          `Jours restants: ${calculateRemainingDays(employee)}\n` +
+                          `Dernière mission: ${employee.lastMissionDate}`);
+                }
+                return;
+            }
+            const employee = employees.find(emp => emp.pseudo === pseudo);
+            if (employee) {
+                document.getElementById('detailsPseudo').value = employee.pseudo;
+                document.getElementById('detailsDaysRemaining').textContent = employee.daysRemaining;
+                document.getElementById('detailsLastMissionDate').textContent = employee.lastMissionDate ? new Date(employee.lastMissionDate).toLocaleDateString('fr-FR') : 'N/A';
+                document.getElementById('detailsProbation').checked = employee.probation;
+                if (employee.probation) {
+                    document.getElementById('kilometersRemainingContainer').style.display = 'block';
+                    document.getElementById('detailsKilometersRemaining').textContent = employee.kilometersRemaining;
+                } else {
+                    document.getElementById('kilometersRemainingContainer').style.display = 'none';
+                }
+                updateMissionsTable(employee);
+                document.getElementById('monthlyKilometers').textContent = `Kilomètres effectués ce mois-ci: ${calculateMonthlyKilometers(employee)}`;
+            }
+        }
+    </script>
+</body>
+</html>
