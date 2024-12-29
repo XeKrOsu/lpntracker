@@ -231,6 +231,15 @@
             --table-header: #2d2d2d;
             --modal-bg: #2d2d2d;
         }
+
+        /* Ensure dark mode styles are properly scoped */
+        :root[data-theme="dark"] {
+            --bg-color: #1a1a1a;
+            --text-color: #fff;
+            --table-border: #444;
+            --table-header: #2d2d2d;
+            --modal-bg: #2d2d2d;
+        }
     </style>
     <!-- Remove old Firebase scripts -->
     <!-- Add new Firebase imports -->
@@ -451,8 +460,8 @@
     </div>
 
     <!-- Add floating login button for mobile -->
-    <div class="mobile-login d-md-none admin-only">
-        <button class="btn btn-primary" onclick="checkAdminPassword()">
+    <div class="mobile-login d-md-none">
+        <button class="btn btn-primary" onclick="openLoginModal()">
             <i class="fas fa-key"></i>
         </button>
     </div>
@@ -1242,5 +1251,50 @@
             document.body.setAttribute('data-theme', savedTheme);
         });
     </script>
+
+    <script>
+        // 1. Update keyboard shortcut
+        document.addEventListener('keydown', function(e) {
+            if (e.ctrlKey && e.altKey && e.key === 'a') {
+                e.preventDefault(); // Prevent default browser behavior
+                openLoginModal();
+            }
+        });
+
+        // 2. Dark mode implementation
+        const darkModeToggle = () => {
+            const body = document.body;
+            const isDark = body.getAttribute('data-theme') === 'dark';
+            body.setAttribute('data-theme', isDark ? 'light' : 'dark');
+            localStorage.setItem('theme', isDark ? 'light' : 'dark');
+        }
+
+        // 3. Single updateStorage implementation
+        const updateStorage = () => {
+            const employees = getEmployees();
+            Storage.saveEmployees(employees);
+            updateEmployeesList();
+        }
+
+        // 4. Login modal functions
+        const openLoginModal = () => {
+            $('#loginModal').modal('show');
+        }
+
+        // Remove any duplicate declarations of updateStorage
+
+        // Initialize dark mode on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            const savedTheme = localStorage.getItem('theme') || 'light';
+            document.body.setAttribute('data-theme', savedTheme);
+        });
+
+        // Update modal trigger buttons to use new function name
+    </script>
+
+    <!-- Update modal trigger buttons -->
+    <button class="btn btn-primary" onclick="openLoginModal()">
+        <i class="fas fa-key"></i>
+    </button>
 </body>
 </html>
