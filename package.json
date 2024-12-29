@@ -4,11 +4,13 @@
   "description": "User tracker for my employees at Les Pneus Normaux (on TrucksBook)",
   "main": "index.js",
   "scripts": {
-    "build": "echo 'No build script defined'"
+    "build": "echo 'Build script is not defined'",
+    "deploy": "firebase deploy"
   },
   "author": "XeKrOsu",
   "license": "MIT",
   "dependencies": {
-    "firebase": "^9.6.1"
+    "firebase": "^9.6.1",
+    "firebase-tools": "^11.0.0"
   }
 }
