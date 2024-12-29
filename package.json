@@ -1,0 +1,14 @@
+{
+  "name": "lpntracker",
+  "version": "1.0.0",
+  "description": "User tracker for my employees at Les Pneus Normaux (on TrucksBook)",
+  "main": "index.js",
+  "scripts": {
+    "build": "echo 'No build script defined'"
+  },
+  "author": "XeKrOsu",
+  "license": "MIT",
+  "dependencies": {
+    "firebase": "^9.6.1"
+  }
+}
