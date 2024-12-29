@@ -240,6 +240,21 @@
             --table-header: #2d2d2d;
             --modal-bg: #2d2d2d;
         }
+
+        .mobile-login {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 1000;
+            display: none; /* Hide by default */
+        }
+
+        /* Only show on mobile */
+        @media (max-width: 768px) {
+            .mobile-login:not(.duplicate) {
+                display: block;
+            }
+        }
     </style>
     <!-- Remove old Firebase scripts -->
     <!-- Add new Firebase imports -->
@@ -460,7 +475,7 @@
     </div>
 
     <!-- Add floating login button for mobile -->
-    <div class="mobile-login d-md-none">
+    <div class="mobile-login unique">
         <button class="btn btn-primary" onclick="openLoginModal()">
             <i class="fas fa-key"></i>
         </button>
@@ -1290,6 +1305,47 @@
         });
 
         // Update modal trigger buttons to use new function name
+    </script>
+
+    <script>
+        // Update login modal handler
+        const openLoginModal = () => {
+            if (!isAdmin) {
+                $('#loginModal').modal('show');
+            }
+        }
+
+        document.getElementById('loginForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const password = document.getElementById('adminPassword').value;
+            
+            const hashedPassword = await hashPassword(password);
+            if (hashedPassword === ADMIN_HASH) {
+                isAdmin = true;
+                sessionStorage.setItem('isAdmin', 'true');
+                document.body.setAttribute('data-admin', 'true');
+                updateUIState();
+                $('#loginModal').modal('hide');
+                document.getElementById('adminPassword').value = '';
+                showNotification('Mode administrateur activé');
+            } else {
+                showNotification('Mot de passe incorrect', 'error');
+            }
+        });
+
+        // Remove duplicate mobile login button
+        document.addEventListener('DOMContentLoaded', function() {
+            const mobileLoginButtons = document.querySelectorAll('.mobile-login');
+            if (mobileLoginButtons.length > 1) {
+                mobileLoginButtons[1].remove();
+            }
+            
+            // Keep only one instance with proper class
+            const mobileLogin = document.querySelector('.mobile-login');
+            if (mobileLogin) {
+                mobileLogin.classList.add('unique');
+            }
+        });
     </script>
 
     <!-- Update modal trigger buttons -->
