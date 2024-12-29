@@ -9,7 +9,8 @@
     <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
-    <script src="storage.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database.js"></script>
     <style>
         :root {
             --bg-color: #f4f4f9;
@@ -448,31 +449,58 @@
     </div>
 
     <script>
+      // Import the functions you need from the SDKs you need
+      import { initializeApp } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-app.js";
+      // TODO: Add SDKs for Firebase products that you want to use
+      // https://firebase.google.com/docs/web/setup#available-libraries
+    
+      // Your web app's Firebase configuration
+      const firebaseConfig = {
+        apiKey: "AIzaSyCQWObZ99LKoI0Ndeg5qvlCvyZ_NCQUnu0",
+        authDomain: "lpntracker.firebaseapp.com",
+        projectId: "lpntracker",
+        storageBucket: "lpntracker.firebasestorage.app",
+        messagingSenderId: "1078879603552",
+        appId: "1:1078879603552:web:0aeacc706e3dd8abaaec05"
+      };
+    
+      // Initialize Firebase
+      const app = initializeApp(firebaseConfig);
+        
     // Storage implementation
     class Storage {
         static saveEmployees(employees) {
-            localStorage.setItem('lpn-tracker-employees', JSON.stringify(employees));
-        }
-
-        static loadEmployees() {
-            const storedEmployees = localStorage.getItem('lpn-tracker-employees');
-            if (storedEmployees) {
-                const employees = JSON.parse(storedEmployees);
-                employees.forEach(emp => {
-                    emp.startDate = new Date(emp.startDate);
-                    emp.lastMissionDate = emp.lastMissionDate === 'N/A' ? 'N/A' : new Date(emp.lastMissionDate);
-                    emp.missions.forEach(mission => {
-                        mission.date = new Date(mission.date);
-                    });
-                });
-                return employees;
-            }
-            return [];
-        }
+      firebase.database().ref('employees').set(employees);
     }
 
-        const ADMIN_HASH = '9903e7a522a805f505017d3593a42602d6bfbbfa82b6bf008558ee6db69ff4a6'; // Hash of 'LesNormauxPneusdeByoo_Arobèse974'
-        const SALT = 'LPN2024'; // Add salt to make rainbow table attacks harder
+    static async loadEmployees() {
+      const snapshot = await firebase.database().ref('employees').once('value');
+      const employees = snapshot.val() || [];
+      employees.forEach(emp => {
+        emp.startDate = new Date(emp.startDate);
+        emp.lastMissionDate = emp.lastMissionDate === 'N/A' ? 'N/A' : new Date(emp.lastMissionDate);
+        emp.missions.forEach(mission => {
+          mission.date = new Date(mission.date);
+        });
+      });
+      return employees;
+    }
+  }
+
+  let employees;
+
+    // Load employees data when the page loads
+      document.addEventListener('DOMContentLoaded', async function() {
+        employees = await Storage.loadEmployees();
+        updateEmployeeTable();
+      });
+    
+      function updateStorage() {
+        Storage.saveEmployees(employees);
+      }
+
+        const ADMIN_HASH = '9903e7a522a805f505017d3593a42602d6bfbbfa82b6bf008558ee6db69ff4a6';
+        const SALT = 'LPN2024';
 
         async function hashPassword(password) {
             const encoder = new TextEncoder();
