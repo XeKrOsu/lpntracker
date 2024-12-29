@@ -448,6 +448,29 @@
     </div>
 
     <script>
+    // Storage implementation
+    class Storage {
+        static saveEmployees(employees) {
+            localStorage.setItem('lpn-tracker-employees', JSON.stringify(employees));
+        }
+
+        static loadEmployees() {
+            const storedEmployees = localStorage.getItem('lpn-tracker-employees');
+            if (storedEmployees) {
+                const employees = JSON.parse(storedEmployees);
+                employees.forEach(emp => {
+                    emp.startDate = new Date(emp.startDate);
+                    emp.lastMissionDate = emp.lastMissionDate === 'N/A' ? 'N/A' : new Date(emp.lastMissionDate);
+                    emp.missions.forEach(mission => {
+                        mission.date = new Date(mission.date);
+                    });
+                });
+                return employees;
+            }
+            return [];
+        }
+    }
+
         const ADMIN_HASH = '9903e7a522a805f505017d3593a42602d6bfbbfa82b6bf008558ee6db69ff4a6'; // Hash of 'LesNormauxPneusdeByoo_Arobèse974'
         const SALT = 'LPN2024'; // Add salt to make rainbow table attacks harder
 
