@@ -9,8 +9,6 @@
     <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database.js"></script>
     <style>
         :root {
             --bg-color: #f4f4f9;
@@ -218,6 +216,9 @@
             }
         }
     </style>
+    <!-- Remove old Firebase scripts -->
+    <!-- Add new Firebase imports -->
+    <!-- Firebase initialization moved to main script -->
 </head>
 <body data-admin="false">
     <div class="container">
@@ -234,11 +235,12 @@
         </div>
 
         <div class="d-flex mb-3">
-            <button type="button" class="btn btn-primary mr-2" data-toggle="modal" data-target="#addEmployeeModal">
-                Ajouter un Employé
+            <button onclick="showAddEmployeeModal()" class="btn btn-primary mb-3 admin-only">
+                Ajouter un employé
             </button>
-            <button type="button" class="btn btn-secondary" onclick="copyToDiscord()">
-                Copier pour Discord
+
+            <button onclick="copyToDiscord()" class="btn btn-secondary mb-3 admin-only">
+                Copier sur Discord
             </button>
         </div>
         <hr>
@@ -300,7 +302,7 @@
     </div>
 
     <!-- Ajouter une mission Modal -->
-    <div class="modal fade" id="addMissionModal" tabindex="-1" aria-labelledby="addMissionModalLabel" aria-hidden="true">
+    <div class="modal fade admin-only" id="addMissionModal" tabindex="-1" aria-labelledby="addMissionModalLabel" aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
@@ -325,7 +327,7 @@
     </div>
 
     <!-- Détails de l'Employé Modal -->
-    <div class="modal fade" id="employeeDetailsModal" tabindex="-1" aria-labelledby="employeeDetailsModalLabel" aria-hidden="true">
+    <div class="modal fade admin-only" id="employeeDetailsModal" tabindex="-1" aria-labelledby="employeeDetailsModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <div class="modal-header">
@@ -448,19 +450,19 @@
         <div class="spinner"></div>
     </div>
 
-    <script type=module>
+    <script type="module">
         // Import the functions you need from the SDKs you need
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-app.js";
         import { getDatabase, ref, set, get, child } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-database.js";
     
         // Your web app's Firebase configuration
         const firebaseConfig = {
-            apiKey: "AIzaSyCQWObZ99LKoI0Ndeg5qvlCvyZ_NCQUnu0",
-            authDomain: "lpntracker.firebaseapp.com",
-            projectId: "lpntracker",
-            storageBucket: "lpntracker.firebasestorage.app",
-            messagingSenderId: "1078879603552",
-            appId: "1:1078879603552:web:0aeacc706e3dd8abaaec05"
+            apiKey: process.env.FIREBASE_API_KEY,
+            authDomain: process.env.FIREBASE_AUTH_DOMAIN,
+            projectId: process.env.FIREBASE_PROJECT_ID,
+            storageBucket: process.env.FIREBASE_STORAGE_BUCKET,
+            messagingSenderId: process.env.FIREBASE_STORAGE_BUCKET,
+            appId: process.env.FIREBASE_APP_ID
         };
     
         // Initialize Firebase
@@ -494,7 +496,8 @@
         });
     
         function updateStorage() {
-            Storage.saveEmployees(employees);
+            localStorage.setItem('employees', JSON.stringify(employees));
+            updateEmployeesList();
         }
 
         const ADMIN_HASH = '9903e7a522a805f505017d3593a42602d6bfbbfa82b6bf008558ee6db69ff4a6';
@@ -1143,6 +1146,59 @@
                 updateMissionsTable(employee);
                 document.getElementById('monthlyKilometers').textContent = `Kilomètres effectués ce mois-ci: ${calculateMonthlyKilometers(employee)}`;
             }
+        }
+
+        // Au tout début du script
+        let isAdmin = false;
+
+        // Fonction de mise à jour de l'interface
+        function updateUIState() {
+            const adminElements = document.querySelectorAll('.admin-only');
+            const modals = document.querySelectorAll('.modal');
+            
+            adminElements.forEach(el => {
+                el.style.display = isAdmin ? '' : 'none';
+            });
+            
+            modals.forEach(modal => {
+                if (!isAdmin) {
+                    $(modal).modal('hide');
+                }
+            });
+        }
+
+        // Modification de l'événement DOMContentLoaded
+        document.addEventListener('DOMContentLoaded', function() {
+            // Forcer l'état non-admin et nettoyer le storage
+            isAdmin = false;
+            sessionStorage.clear();
+            localStorage.clear();
+            
+            // Ajouter la classe admin-only aux modales qui doivent être restreintes
+            document.getElementById('addMissionModal').classList.add('admin-only');
+            document.getElementById('employeeDetailsModal').classList.add('admin-only');
+            
+            updateUIState();
+        });
+
+        // Mise à jour des modales
+        function showAddEmployeeModal() {
+            if (!isAdmin) return;
+            $('#addEmployeeModal').modal('show');
+        }
+
+        function showEmployeeDetails(pseudo) {
+            if (!isAdmin) {
+                // Version lecture seule pour non-admin
+                const employee = employees.find(emp => emp.pseudo === pseudo);
+                if (employee) {
+                    alert(`Détails de ${employee.pseudo}\n` +
+                          `Jours restants: ${calculateRemainingDays(employee)}\n` +
+                          `Dernière mission: ${employee.lastMissionDate}`);
+                }
+                return;
+            }
+            // ... reste du code existant ...
         }
     </script>
 </body>
