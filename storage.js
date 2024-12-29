@@ -1,10 +1,10 @@
 class Storage {
     static saveEmployees(employees) {
-        localStorage.setItem('lpn-tracker-employees', JSON.stringify(employees));
+        localStorage.setItem('employees', JSON.stringify(employees));
     }
 
     static loadEmployees() {
-        const storedEmployees = localStorage.getItem('lpn-tracker-employees');
+        const storedEmployees = localStorage.getItem('employees');
         if (storedEmployees) {
             const employees = JSON.parse(storedEmployees);
             employees.forEach(emp => {
