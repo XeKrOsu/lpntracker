@@ -172,7 +172,7 @@
 
         .form-control:focus {
             background-color: var(--bg-color);
-            color: var(--text-color);
+            color: var (--text-color);
         }
 
         .close {
@@ -219,7 +219,7 @@
         }
     </style>
 </head>
-<body>
+<body data-admin="false">
     <div class="container">
         <div class="d-flex justify-content-between align-items-center mb-3">
             <h1>Les Pneus Normaux - Tracker</h1>
@@ -521,6 +521,7 @@
             if (hashedPassword === ADMIN_HASH) {
                 isAdmin = true;
                 sessionStorage.setItem('isAdmin', 'true');
+                document.body.setAttribute('data-admin', 'true');
                 showNotification('Mode administrateur activé');
                 updateUIState();
                 $('#loginModal').modal('hide');
@@ -535,13 +536,23 @@
 
         // Update authentication check on load
         document.addEventListener('DOMContentLoaded', function() {
-            isAdmin = sessionStorage.getItem('isAdmin') === 'true';
+            // Initialiser l'état admin à false par défaut
+            isAdmin = false;
+            document.body.setAttribute('data-admin', 'false');
+            
+            // Vérifier si une session admin existe
+            if (sessionStorage.getItem('isAdmin') === 'true') {
+                isAdmin = true;
+                document.body.setAttribute('data-admin', 'true');
+            }
+            
             updateUIState();
         });
 
         function logout() {
             isAdmin = false;
             sessionStorage.removeItem('isAdmin');
+            document.body.setAttribute('data-admin', 'false');
             showNotification('Déconnexion effectuée');
             updateUIState();
         }
@@ -1065,6 +1076,7 @@
         // Update UI based on admin state
         function updateUIState() {
             const adminElements = document.querySelectorAll('.admin-only');
+            document.body.setAttribute('data-admin', isAdmin);
             adminElements.forEach(el => {
                 el.style.display = isAdmin ? '' : 'none';
             });
@@ -1086,6 +1098,7 @@
         function logout() {
             isAdmin = false;
             localStorage.removeItem('isAdmin');
+            document.body.setAttribute('data-admin', 'false');
             showNotification('Déconnexion effectuée');
             updateUIState();
         }
