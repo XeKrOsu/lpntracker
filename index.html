@@ -215,6 +215,22 @@
                 box-shadow: 0 2px 5px rgba(0,0,0,0.2);
             }
         }
+
+        /* Update mobile login visibility */
+        @media (min-width: 768px) {
+            .mobile-login {
+                display: none !important;
+            }
+        }
+
+        /* Ensure dark mode styles are applied */
+        [data-theme="dark"] {
+            --bg-color: #1a1a1a;
+            --text-color: #fff;
+            --table-border: #444;
+            --table-header: #2d2d2d;
+            --modal-bg: #2d2d2d;
+        }
     </style>
     <!-- Remove old Firebase scripts -->
     <!-- Add new Firebase imports -->
@@ -435,8 +451,8 @@
     </div>
 
     <!-- Add floating login button for mobile -->
-    <div class="mobile-login">
-        <button class="btn btn-secondary rounded-circle">
+    <div class="mobile-login d-md-none admin-only">
+        <button class="btn btn-primary" onclick="checkAdminPassword()">
             <i class="fas fa-key"></i>
         </button>
     </div>
@@ -496,7 +512,8 @@
         });
     
         function updateStorage() {
-            localStorage.setItem('employees', JSON.stringify(employees));
+            const employees = getEmployees();
+            Storage.saveEmployees(employees);
             updateEmployeesList();
         }
 
@@ -1098,7 +1115,8 @@
 
         // Add hidden admin login trigger
         document.addEventListener('keydown', function(e) {
-            if (e.ctrlKey && e.altKey && e.key === 'a') {
+            // Ctrl + Shift + A
+            if (e.ctrlKey && e.shiftKey && e.key === 'A') {
                 checkAdminPassword();
             }
         });
@@ -1200,6 +1218,29 @@
             }
             // ... reste du code existant ...
         }
+    </script>
+
+    <script>
+        document.addEventListener('keydown', function(e) {
+            // Ctrl + Shift + A
+            if (e.ctrlKey && e.shiftKey && e.key === 'A') {
+                checkAdminPassword();
+            }
+        });
+    </script>
+
+    <script>
+        function toggleDarkMode() {
+            const body = document.body;
+            const isDark = body.getAttribute('data-theme') === 'dark';
+            body.setAttribute('data-theme', isDark ? 'light' : 'dark');
+            localStorage.setItem('theme', isDark ? 'light' : 'dark');
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const savedTheme = localStorage.getItem('theme') || 'light';
+            document.body.setAttribute('data-theme', savedTheme);
+        });
     </script>
 </body>
 </html>
