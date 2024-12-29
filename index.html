@@ -522,10 +522,10 @@
                 isAdmin = true;
                 sessionStorage.setItem('isAdmin', 'true');
                 document.body.setAttribute('data-admin', 'true');
-                showNotification('Mode administrateur activé');
                 updateUIState();
                 $('#loginModal').modal('hide');
                 document.getElementById('adminPassword').value = '';
+                showNotification('Mode administrateur activé');
             } else {
                 showNotification('Mot de passe incorrect', 'error');
             }
@@ -536,15 +536,19 @@
 
         // Update authentication check on load
         document.addEventListener('DOMContentLoaded', function() {
-            // Initialiser l'état admin à false par défaut
+            // Forcer l'état non-admin au démarrage
             isAdmin = false;
+            sessionStorage.removeItem('isAdmin');
             document.body.setAttribute('data-admin', 'false');
             
-            // Vérifier si une session admin existe
-            if (sessionStorage.getItem('isAdmin') === 'true') {
-                isAdmin = true;
-                document.body.setAttribute('data-admin', 'true');
-            }
+            // Cacher tous les éléments admin
+            const adminElements = document.querySelectorAll('.admin-only');
+            adminElements.forEach(el => {
+                el.style.display = 'none';
+            });
+
+            // Supprimer les anciennes données de localStorage
+            localStorage.removeItem('isAdmin');
             
             updateUIState();
         });
@@ -1076,10 +1080,12 @@
         // Update UI based on admin state
         function updateUIState() {
             const adminElements = document.querySelectorAll('.admin-only');
-            document.body.setAttribute('data-admin', isAdmin);
             adminElements.forEach(el => {
-                el.style.display = isAdmin ? '' : 'none';
+                el.style.display = isAdmin ? 'inline-block' : 'none';
             });
+            
+            // Mettre à jour l'attribut data-admin sur le body
+            document.body.setAttribute('data-admin', isAdmin.toString());
         }
 
         // Add admin-only class to interactive elements
