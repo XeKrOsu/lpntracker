@@ -272,8 +272,11 @@
 
     <!-- Bouton de connexion -->
     <div class="login-button">
-        <button class="btn btn-primary" onclick="window.openLoginModal()">
+        <button id="loginButton" class="btn btn-primary" onclick="window.openLoginModal()">
             <i class="fas fa-key"></i>
+        </button>
+        <button id="logoutButton" class="btn btn-danger admin-only" onclick="window.logout()" style="margin-top: 10px;">
+            <i class="fas fa-sign-out-alt"></i>
         </button>
     </div>
 
@@ -450,6 +453,14 @@
         window.sortEmployees = function(field) {
             sortEmployeesByField(field);
         };
+
+        window.logout = function() {
+            isAdmin = false;
+            sessionStorage.removeItem('isAdmin');
+            document.body.setAttribute('data-admin', 'false');
+            updateUIState();
+            showNotification('Déconnexion réussie');
+        }
 
         // Variables globales
         let employees = [];
@@ -769,6 +780,49 @@
             const employee = employees.find(emp => emp.pseudo === pseudo);
             if (!employee) return;
 
+            // Masquer/Afficher les éléments selon les droits admin
+            const adminElements = document.querySelectorAll('.modal .admin-only');
+            adminElements.forEach(el => {
+                el.style.display = isAdmin ? 'block' : 'none';
+            });
+
+            // Désactiver les formulaires pour les non-admin
+            document.getElementById('employeeDetailsForm').querySelectorAll('input, button').forEach(el => {
+                el.disabled = !isAdmin;
+            });
+            // Gestionnaire du formulaire d'ajout de mission
+            document.getElementById('addMissionFormDetails').addEventListener('submit', async function(e) {
+                e.preventDefault();
+                if (!isAdmin) return;
+
+                const pseudo = document.getElementById('detailsPseudo').value;
+                const date = document.getElementById('dateDetails').value;
+                const kilometers = parseInt(document.getElementById('kilometersDetails').value);
+
+                const employee = employees.find(emp => emp.pseudo === pseudo);
+                if (!employee) return;
+
+                const newMission = {
+                    date: date,
+                    kilometers: kilometers
+                };
+
+                employee.missions.push(newMission);
+                employee.lastMissionDate = date;
+
+                try {
+                    await Storage.saveEmployees(employees);
+                    showEmployeeDetails(pseudo);
+                    updateEmployeeTable();
+                    showNotification('Mission ajoutée avec succès');
+                    this.reset();
+                } catch (error) {
+                    console.error('Erreur lors de l\'ajout de la mission:', error);
+                    showNotification('Erreur lors de l\'ajout de la mission', 'error');
+                }
+            });
+            document.getElementById('deleteEmployeeButton').style.display = isAdmin ? 'block' : 'none';
+
             // Remplir les champs du modal
             document.getElementById('detailsPseudo').value = employee.pseudo;
             document.getElementById('detailsDaysRemaining').textContent = formatDaysRemaining(employee.daysRemaining);
@@ -793,7 +847,7 @@
                 row.innerHTML = `
                     <td>${new Date(mission.date).toLocaleDateString('fr-FR')}</td>
                     <td>${mission.kilometers} km</td>
-                    <td>
+                    <td class="mission-actions" style="display: ${isAdmin ? 'block' : 'none'}">
                         <button class="btn btn-sm btn-warning mr-2" onclick="editMission('${employee.pseudo}', ${index})">
                             Modifier
                         </button>
@@ -814,6 +868,27 @@
             // Afficher le modal
             $('#employeeDetailsModal').modal('show');
         }
+
+        document.getElementById('deleteEmployeeButton').addEventListener('click', async function() {
+            if (!isAdmin) return;
+
+            const pseudo = document.getElementById('detailsPseudo').value;
+            if (confirm(`Êtes-vous sûr de vouloir supprimer l'employé ${pseudo} ?`)) {
+                const index = employees.findIndex(emp => emp.pseudo === pseudo);
+                if (index === -1) return;
+
+                employees.splice(index, 1);
+                try {
+                    await Storage.saveEmployees(employees);
+                    $('#employeeDetailsModal').modal('hide');
+                    updateEmployeeTable();
+                    showNotification(`Employé ${pseudo} supprimé avec succès`);
+                } catch (error) {
+                    console.error('Erreur lors de la suppression:', error);
+                    showNotification('Erreur lors de la suppression', 'error');
+                }
+            }
+        });
 
         function calculateMonthlyKilometers(missions) {
             const monthlyKm = {};
