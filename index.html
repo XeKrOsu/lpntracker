@@ -1291,29 +1291,21 @@
             updateEmployeesList();
         }
 
-        // 4. Login modal functions
+        // Login modal function
         const openLoginModal = () => {
-            $('#loginModal').modal('show');
+            if (!isAdmin) {
+                $('#loginModal').modal('show');
+            }
         }
-
-        // Remove any duplicate declarations of updateStorage
 
         // Initialize dark mode on page load
         document.addEventListener('DOMContentLoaded', () => {
             const savedTheme = localStorage.getItem('theme') || 'light';
             document.body.setAttribute('data-theme', savedTheme);
         });
-
-        // Update modal trigger buttons to use new function name
     </script>
 
     <script>
-        // Update login modal handler
-        const openLoginModal = () => {
-            if (!isAdmin) {
-                $('#loginModal').modal('show');
-            }
-        }
 
         document.getElementById('loginForm').addEventListener('submit', async function(e) {
             e.preventDefault();
