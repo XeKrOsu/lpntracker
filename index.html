@@ -568,11 +568,20 @@
             });
         }
 
-        function formatDaysRemaining(days) {
-            if (days >= 0) {
-                return `${days} jours`;
+        function formatDaysRemaining(date) {
+            if (!date || date === 'N/A') return 'Aucune mission';
+            
+            const lastMissionDate = new Date(date);
+            if (isNaN(lastMissionDate.getTime())) return 'Date invalide';
+            
+            const today = new Date();
+            const diffTime = today - lastMissionDate;
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+            
+            if (diffDays > 30) {
+                return `${diffDays - 30} jours de retard`;
             } else {
-                return `${Math.abs(days)} jours de retard`;
+                return `${30 - diffDays} jours restants`;
             }
         }
 
@@ -679,6 +688,51 @@
             } catch (error) {
                 console.error('Erreur lors de la modification:', error);
                 showNotification('Erreur lors de la modification', 'error');
+            }
+        });
+
+        document.getElementById('addMissionFormDetails').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            if (!isAdmin) return;
+
+            const pseudo = document.getElementById('detailsPseudo').value;
+            const date = document.getElementById('dateDetails').value;
+            const kilometers = parseInt(document.getElementById('kilometersDetails').value);
+
+            const employee = employees.find(emp => emp.pseudo === pseudo);
+            if (!employee) return;
+
+            // Vérifier si la mission existe déjà
+            const missionExists = employee.missions.some(mission => 
+                mission.date === date && mission.kilometers === kilometers
+            );
+
+            if (missionExists) {
+                showNotification('Cette mission existe déjà', 'error');
+                return;
+            }
+
+            const newMission = {
+                date: date,
+                kilometers: kilometers
+            };
+
+            try {
+                employee.missions.push(newMission);
+                employee.lastMissionDate = employee.missions.reduce((latest, mission) => {
+                    const missionDate = new Date(mission.date);
+                    const latestDate = new Date(latest);
+                    return missionDate > latestDate ? mission.date : latest;
+                }, employee.missions[0].date);
+
+                await Storage.saveEmployees(employees);
+                showEmployeeDetails(pseudo);
+                updateEmployeeTable();
+                showNotification('Mission ajoutée avec succès');
+                this.reset();
+            } catch (error) {
+                console.error('Erreur lors de l\'ajout de la mission:', error);
+                showNotification('Erreur lors de l\'ajout de la mission', 'error');
             }
         });
 
@@ -857,91 +911,51 @@
             const employee = employees.find(emp => emp.pseudo === pseudo);
             if (!employee) return;
 
-            // Masquer complètement la section d'ajout de mission pour les non-admins
-            const addMissionSection = document.querySelector('#addMissionFormDetails').closest('div');
-            addMissionSection.style.display = isAdmin ? 'block' : 'none';
-
-            // Masquer/Afficher les éléments selon les droits admin
-            const adminElements = document.querySelectorAll('.modal .admin-only');
+            // Masquer les éléments admin
+            const adminElements = document.querySelectorAll('.admin-only');
             adminElements.forEach(el => {
                 el.style.display = isAdmin ? 'block' : 'none';
             });
 
-            // Désactiver les formulaires pour les non-admin
-            document.getElementById('employeeDetailsForm').querySelectorAll('input, button').forEach(el => {
-                el.disabled = !isAdmin;
-            });
-            // Gestionnaire du formulaire d'ajout de mission
-            document.getElementById('addMissionFormDetails').addEventListener('submit', async function(e) {
-                e.preventDefault();
-                if (!isAdmin) return;
-
-                const pseudo = document.getElementById('detailsPseudo').value;
-                const date = document.getElementById('dateDetails').value;
-                const kilometers = parseInt(document.getElementById('kilometersDetails').value);
-
-                const employee = employees.find(emp => emp.pseudo === pseudo);
-                if (!employee) return;
-
-                const newMission = {
-                    date: date,
-                    kilometers: kilometers
-                };
-
-                employee.missions.push(newMission);
-                employee.lastMissionDate = date;
-
-                try {
-                    await Storage.saveEmployees(employees);
-                    showEmployeeDetails(pseudo);
-                    updateEmployeeTable();
-                    showNotification('Mission ajoutée avec succès');
-                    this.reset();
-                } catch (error) {
-                    console.error('Erreur lors de l\'ajout de la mission:', error);
-                    showNotification('Erreur lors de l\'ajout de la mission', 'error');
-                }
-            });
-            document.getElementById('deleteEmployeeButton').style.display = isAdmin ? 'block' : 'none';
-
-            // Remplir les champs du modal
+            // Remplir les informations de base (toujours visibles)
             document.getElementById('detailsPseudo').value = employee.pseudo;
-            document.getElementById('detailsDaysRemaining').textContent = formatDaysRemaining(employee.daysRemaining);
+            document.getElementById('detailsDaysRemaining').textContent = formatDaysRemaining(employee.lastMissionDate);
             document.getElementById('detailsLastMissionDate').textContent = employee.lastMissionDate;
             document.getElementById('detailsProbation').checked = employee.probation;
 
-            if (employee.probation) {
-                const totalKilometers = employee.missions.reduce((sum, mission) => sum + mission.kilometers, 0);
-                document.getElementById('detailsKilometersRemaining').textContent = 
-                    `${Math.max(0, 2500 - totalKilometers)} km restants pour sortir de la période d'essai`;
-                document.getElementById('kilometersRemainingContainer').style.display = 'block';
-            } else {
-                document.getElementById('kilometersRemainingContainer').style.display = 'none';
-            }
+            // Masquer le formulaire d'ajout de mission pour les non-admins
+            const addMissionSection = document.querySelector('#addMissionFormDetails').closest('div');
+            addMissionSection.style.display = isAdmin ? 'block' : 'none';
 
-            // Afficher les missions
+            // Afficher les missions (triées par date)
+            const sortedMissions = [...employee.missions].sort((a, b) => 
+                new Date(a.date) - new Date(b.date)
+            );
+
             const missionsTableBody = document.getElementById('missionsTableBody');
             missionsTableBody.innerHTML = '';
 
-            employee.missions.forEach((mission, index) => {
+            sortedMissions.forEach((mission, index) => {
                 const row = document.createElement('tr');
                 row.innerHTML = `
                     <td>${new Date(mission.date).toLocaleDateString('fr-FR')}</td>
                     <td>${mission.kilometers} km</td>
-                    <td class="mission-actions" style="display: ${isAdmin ? 'block' : 'none'}">
-                        <button class="btn btn-sm btn-warning mr-2" onclick="editMission('${employee.pseudo}', ${index})">
-                            Modifier
-                        </button>
-                        <button class="btn btn-sm btn-danger" onclick="deleteMission('${employee.pseudo}', ${index})">
-                            Supprimer
-                        </button>
-                    </td>
+                    ${isAdmin ? `
+                        <td>
+                            <button class="btn btn-sm btn-warning mr-2" onclick="editMission('${employee.pseudo}', ${index})">
+                                Modifier
+                            </button>
+                            <button class="btn btn-sm btn-danger" onclick="deleteMission('${employee.pseudo}', ${index})">
+                                Supprimer
+                            </button>
+                        </td>
+                    ` : '<td></td>'}
                 `;
                 missionsTableBody.appendChild(row);
             });
 
-            // Calculer les kilomètres mensuels
-            const monthlyKm = calculateMonthlyKilometers(employee.missions);
+            // Calculer et afficher les kilomètres mensuels
+            const monthlyKm = calculateMonthlyKilometers(sortedMissions);
             document.getElementById('monthlyKilometers').innerHTML = Object.entries(monthlyKm)
                 .map(([month, km]) => `${month}: ${km} km`)
                 .join('<br>');
@@ -949,27 +963,6 @@
             // Afficher le modal
             $('#employeeDetailsModal').modal('show');
         }
-
-        document.getElementById('deleteEmployeeButton').addEventListener('click', async function() {
-            if (!isAdmin) return;
-
-            const pseudo = document.getElementById('detailsPseudo').value;
-            if (confirm(`Êtes-vous sûr de vouloir supprimer l'employé ${pseudo} ?`)) {
-                const index = employees.findIndex(emp => emp.pseudo === pseudo);
-                if (index === -1) return;
-
-                employees.splice(index, 1);
-                try {
-                    await Storage.saveEmployees(employees);
-                    $('#employeeDetailsModal').modal('hide');
-                    updateEmployeeTable();
-                    showNotification(`Employé ${pseudo} supprimé avec succès`);
-                } catch (error) {
-                    console.error('Erreur lors de la suppression:', error);
-                    showNotification('Erreur lors de la suppression', 'error');
-                }
-            }
-        });
 
         function calculateMonthlyKilometers(missions) {
             const monthlyKm = {};
