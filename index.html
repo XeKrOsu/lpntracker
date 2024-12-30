@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="fr" data-theme="light">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -38,7 +38,7 @@
             padding: 0;
         }
         h1, h2 {
-            color: #444;
+            color: var(--text-color); /* Correction pour le mode sombre */
         }
         table {
             width: 100%;
@@ -56,9 +56,9 @@
             background-color: var(--table-header);
         }
         .form-container {
-            background-color: #fff;
+            background-color: var(--modal-bg); /* Correction pour le mode sombre */
             padding: 20px;
-            border: 1px solid #ddd;
+            border: 1px solid var(--table-border);
             border-radius: 5px;
             margin-bottom: 20px;
         }
@@ -66,8 +66,10 @@
             width: 100%;
             padding: 10px;
             margin: 5px 0 10px 0;
-            border: 1px solid #ddd;
+            border: 1px solid var(--table-border);
             border-radius: 5px;
+            background-color: var(--bg-color);
+            color: var(--text-color);
         }
         button {
             background-color: #4CAF50;
@@ -82,9 +84,10 @@
         }
         .container {
             padding: 20px;
-            border: 1px solid #ddd;
+            border: 1px solid var(--table-border);
             border-radius: 5px;
             margin: 20px;
+            background-color: var(--modal-bg);
         }
         .notification {
             position: fixed;
@@ -139,126 +142,43 @@
             position: fixed;
             top: 20px;
             right: 20px;
-        }
-        h1, h2, label, .modal-title {
-            color: var(--text-color);
+            z-index: 1001;
         }
 
+        /* Modification du bouton de connexion pour qu'il soit visible sur tous les écrans */
+        .login-button {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 1000;
+            display: block !important;
+        }
+
+        .login-button button {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            padding: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+
+        /* Correction des styles pour le mode sombre */
         .modal-content {
             background-color: var(--modal-bg);
             color: var(--text-color);
         }
 
-        table {
-            background-color: var(--bg-color);
-        }
-
-        th, td {
-            color: var(--text-color);
-        }
-
-        .last-update {
-            color: var(--text-color);
-            background-color: var(--table-header);
-        }
-
-        .form-control {
-            background-color: var (--bg-color);
-            color: var(--text-color);
+        .modal-header, .modal-footer {
             border-color: var(--table-border);
-        }
-
-        .form-control:focus {
-            background-color: var(--bg-color);
-            color: var (--text-color);
         }
 
         .close {
             color: var(--text-color);
         }
-
-        .theme-switch {
-            color: var(--text-color);
-        }
-
-        .admin-only {
-            transition: opacity 0.3s ease;
-        }
-
-        [data-admin="false"] .admin-only {
-            display: none;
-        }
-
-        /* Add responsive styles */
-        @media (max-width: 768px) {
-            .container {
-                padding: 10px;
-                margin: 10px;
-            }
-            
-            table {
-                display: block;
-                overflow-x: auto;
-            }
-            
-            .mobile-login {
-                position: fixed;
-                bottom: 20px;
-                right: 20px;
-                z-index: 1000;
-            }
-            
-            .mobile-login button {
-                width: 50px;
-                height: 50px;
-                padding: 0;
-                box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-            }
-        }
-
-        /* Update mobile login visibility */
-        @media (min-width: 768px) {
-            .mobile-login {
-                display: none !important;
-            }
-        }
-
-        /* Ensure dark mode styles are applied */
-        [data-theme="dark"] {
-            --bg-color: #1a1a1a;
-            --text-color: #fff;
-            --table-border: #444;
-            --table-header: #2d2d2d;
-            --modal-bg: #2d2d2d;
-        }
-
-        /* Ensure dark mode styles are properly scoped */
-        :root[data-theme="dark"] {
-            --bg-color: #1a1a1a;
-            --text-color: #fff;
-            --table-border: #444;
-            --table-header: #2d2d2d;
-            --modal-bg: #2d2d2d;
-        }
-
-        .mobile-login {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            z-index: 1000;
-            display: none; /* Hide by default */
-        }
-
-        /* Only show on mobile */
-        @media (max-width: 768px) {
-            .mobile-login:not(.duplicate) {
-                display: block;
-            }
-        }
     </style>
-    <!-- Remove old Firebase scripts -->
-    <!-- Add new Firebase imports -->
-    <!-- Firebase initialization moved to main script -->
 </head>
 <body data-admin="false">
     <div class="container">
@@ -275,7 +195,7 @@
         </div>
 
         <div class="d-flex mb-3">
-            <button onclick="showAddEmployeeModal()" class="btn btn-primary mb-3 admin-only">
+            <button onclick="showAddEmployeeModal()" class="btn btn-primary mb-3 mr-2 admin-only">
                 Ajouter un employé
             </button>
 
@@ -309,11 +229,11 @@
     </div>
 
     <!-- Modal Ajout Employé -->
-    <div class="modal fade" id="addEmployeeModal" tabindex="-1" aria-labelledby="addEmployeeModalLabel" aria-hidden="true">
+    <div class="modal fade" id="addEmployeeModal" tabindex="-1">
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="addEmployeeModalLabel">Ajouter un Employé</h5>
+                    <h5 class="modal-title">Ajouter un Employé</h5>
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
                     </button>
@@ -322,15 +242,15 @@
                     <form id="addEmployeeForm">
                         <div class="form-group">
                             <label for="pseudo">Pseudo:</label>
-                            <input type="text" class="form-control" id="pseudo" name="pseudo" required>
+                            <input type="text" class="form-control" id="pseudo" required>
                         </div>
                         <div class="form-group">
                             <label for="startDate">Date d'entrée:</label>
-                            <input type="date" class="form-control" id="startDate" name="startDate" required>
+                            <input type="date" class="form-control" id="startDate" required>
                         </div>
                         <div class="form-group">
                             <label for="probation">
-                                <input type="checkbox" id="probation" name="probation">
+                                <input type="checkbox" id="probation">
                                 En Période Probatoire
                             </label>
                         </div>
@@ -341,83 +261,108 @@
         </div>
     </div>
 
-    <!-- Ajouter une mission Modal -->
-    <div class="modal fade admin-only" id="addMissionModal" tabindex="-1" aria-labelledby="addMissionModalLabel" aria-hidden="true">
+    <!-- Login Button (visible sur tous les écrans) -->
+    <div class="login-button">
+        <button class="btn btn-primary" onclick="openLoginModal()">
+            <i class="fas fa-key"></i>
+        </button>
+    </div>
+
+    <!-- Login Modal -->
+    <div class="modal fade" id="loginModal" tabindex="-1">
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="addMissionModalLabel">Ajouter une Mission</h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
+                    <h5 class="modal-title">Connexion Administrateur</h5>
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
                 </div>
                 <div class="modal-body">
-                    <form id="addMissionForm">
-                        <label for="employee">Employé:</label>
-                        <select id="employee" name="employee" required></select>
-                        <label for="date">Date:</label>
-                        <input type="date" id="date" name="date" required>
-                        <label for="kilometers">Kilomètres:</label>
-                        <input type="number" id="kilometers" name="kilometers" required>
-                        <button type="submit" class="btn btn-primary">Ajouter</button>
+                    <form id="loginForm">
+                        <div class="form-group">
+                            <label>Mot de passe:</label>
+                            <input type="password" id="adminPassword" class="form-control" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Connexion</button>
                     </form>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Détails de l'Employé Modal -->
-    <div class="modal fade admin-only" id="employeeDetailsModal" tabindex="-1" aria-labelledby="employeeDetailsModalLabel" aria-hidden="true">
+    <div id="notification" class="notification" style="display: none;">
+        <span id="notificationMessage"></span>
+        <button onclick="hideNotification()" class="close">&times;</button>
+    </div>
+
+    <div id="loadingOverlay" class="loading-overlay" style="display: none;">
+        <div class="spinner"></div>
+    </div>
+
+    <!-- Modal Détails Employé -->
+    <div class="modal fade" id="employeeDetailsModal" tabindex="-1">
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="employeeDetailsModalLabel">Détails de l'Employé</h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
+                    <h5 class="modal-title">Détails de l'Employé</h5>
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
                 </div>
                 <div class="modal-body">
                     <form id="employeeDetailsForm">
-                        <label for="detailsPseudo">Pseudo:</label>
-                        <input type="text" id="detailsPseudo" name="detailsPseudo" readonly>
-                        <div>
-                            <strong>Jours Restants:</strong> <span id="detailsDaysRemaining"></span>
+                        <div class="form-group">
+                            <label for="detailsPseudo">Pseudo:</label>
+                            <input type="text" id="detailsPseudo" class="form-control" readonly>
                         </div>
-                        <div>
-                            <strong>Date de la Dernière Mission:</strong> <span id="detailsLastMissionDate"></span>
+                        <div class="form-group">
+                            <strong>Jours Restants: </strong>
+                            <span id="detailsDaysRemaining"></span>
                         </div>
-                        <label for="detailsProbation">En Période Probatoire:</label>
-                        <input type="checkbox" id="detailsProbation" name="detailsProbation">
-                        <div id="kilometersRemainingContainer" class="admin-only">
-                            <strong>Kilomètres Restants:</strong> <span id="detailsKilometersRemaining"></span>
+                        <div class="form-group">
+                            <strong>Dernière Mission: </strong>
+                            <span id="detailsLastMissionDate"></span>
+                        </div>
+                        <div class="form-group">
+                            <label for="detailsProbation">
+                                <input type="checkbox" id="detailsProbation">
+                                En Période Probatoire
+                            </label>
+                        </div>
+                        <div id="kilometersRemainingContainer">
+                            <strong>Kilomètres Restants: </strong>
+                            <span id="detailsKilometersRemaining"></span>
                         </div>
                         <div class="d-flex justify-content-between mt-3">
                             <button type="submit" class="btn btn-primary">Mettre à Jour</button>
-                            <button id="deleteEmployeeButton" class="btn btn-danger">Supprimer Employé</button>
+                            <button type="button" id="deleteEmployeeButton" class="btn btn-danger">Supprimer Employé</button>
                         </div>
                     </form>
+
                     <hr>
                     <h5>Ajouter une Mission</h5>
                     <form id="addMissionFormDetails">
-                        <label for="dateDetails">Date:</label>
-                        <input type="date" id="dateDetails" name="dateDetails" required>
-                        <label for="kilometersDetails">Kilomètres:</label>
-                        <input type="number" id="kilometersDetails" name="kilometersDetails" required>
+                        <div class="form-group">
+                            <label for="dateDetails">Date:</label>
+                            <input type="date" id="dateDetails" class="form-control" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="kilometersDetails">Kilomètres:</label>
+                            <input type="number" id="kilometersDetails" class="form-control" required>
+                        </div>
                         <button type="submit" class="btn btn-primary">Ajouter</button>
                     </form>
+
                     <hr>
-                    <h5>Missions et Notes</h5>
+                    <h5>Missions</h5>
                     <table class="table">
                         <thead>
                             <tr>
                                 <th>Date</th>
                                 <th>Kilomètres</th>
-                                <th>Note</th>
+                                <th>Actions</th>
                             </tr>
                         </thead>
-                        <tbody id="missionsTableBody">
-                        </tbody>
+                        <tbody id="missionsTableBody"></tbody>
                     </table>
+
                     <hr>
                     <h5>Kilomètres Mensuels</h5>
                     <p id="monthlyKilometers"></p>
@@ -451,43 +396,6 @@
                 </div>
             </div>
         </div>
-    </div>
-
-    <!-- Add this modal for password input -->
-    <div class="modal fade" id="loginModal" tabindex="-1">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Connexion Administrateur</h5>
-                    <button type="button" class="close" data-dismiss="modal">&times;</button>
-                </div>
-                <div class="modal-body">
-                    <form id="loginForm">
-                        <div class="form-group">
-                            <label>Mot de passe:</label>
-                            <input type="password" id="adminPassword" class="form-control" required>
-                        </div>
-                        <button type="submit" class="btn btn-primary">Connexion</button>
-                    </form>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Add floating login button for mobile -->
-    <div class="mobile-login unique">
-        <button class="btn btn-primary" onclick="openLoginModal()">
-            <i class="fas fa-key"></i>
-        </button>
-    </div>
-
-    <div id="notification" class="notification" style="display: none;">
-        <span id="notificationMessage"></span>
-        <button onclick="hideNotification()" class="close">&times;</button>
-    </div>
-
-    <div id="loadingOverlay" class="loading-overlay" style="display: none;">
-        <div class="spinner"></div>
     </div>
 
     <script type="module">
@@ -529,14 +437,56 @@
             }
         }
     
-        // Load employees data when the page loads
+        // Variables globales
+        let employees = [];
+        let isAdmin = false;
+    
+        // Gestionnaires d'événements pour le chargement initial
         document.addEventListener('DOMContentLoaded', async function() {
-            employees = await Storage.loadEmployees();
-            updateEmployeeTable();
+            try {
+                // Afficher l'overlay de chargement
+                document.getElementById('loadingOverlay').style.display = 'flex';
+    
+                // Charger les données des employés
+                employees = await Storage.loadEmployees();
+    
+                // Configuration du mode sombre
+                const themeSwitch = document.getElementById('themeSwitch');
+                const htmlElement = document.documentElement;
+                const savedTheme = localStorage.getItem('theme') || 'light';
+                htmlElement.setAttribute('data-theme', savedTheme);
+                themeSwitch.checked = savedTheme === 'dark';
+    
+                // Gestionnaire du switch de thème
+                themeSwitch.addEventListener('change', function() {
+                    const newTheme = this.checked ? 'dark' : 'light';
+                    htmlElement.setAttribute('data-theme', newTheme);
+                    localStorage.setItem('theme', newTheme);
+                });
+    
+                // Raccourci clavier pour le modal de connexion (Alt + L)
+                document.addEventListener('keydown', function(e) {
+                    if (e.altKey && e.key.toLowerCase() === 'l') {
+                        e.preventDefault();
+                        openLoginModal();
+                    }
+                });
+    
+                // Mettre à jour l'interface
+                updateEmployeeTable();
+                updateUIState();
+    
+                // Cacher l'overlay de chargement
+                document.getElementById('loadingOverlay').style.display = 'none';
+            } catch (error) {
+                console.error('Error loading data:', error);
+                showNotification('Erreur lors du chargement des données', 'error');
+                document.getElementById('loadingOverlay').style.display = 'none';
+            }
         });
     
+        // Fonction unique updateStorage
         function updateStorage() {
-            const employees = getEmployees();
             Storage.saveEmployees(employees);
             updateEmployeesList();
         }
@@ -552,11 +502,12 @@
             return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
         }
     
-        async function checkAdminPassword() {
+        // Fonction pour ouvrir le modal de connexion
+        function openLoginModal() {
             $('#loginModal').modal('show');
         }
     
-        // Add login form handler
+        // Gestionnaire du formulaire de connexion
         document.getElementById('loginForm').addEventListener('submit', async function(e) {
             e.preventDefault();
             const password = document.getElementById('adminPassword').value;
@@ -575,27 +526,14 @@
             }
         });
     
-        // Add mobile login trigger
-        document.querySelector('.mobile-login button').addEventListener('click', checkAdminPassword);
-    
-        // Update authentication check on load
-        document.addEventListener('DOMContentLoaded', function() {
-            // Forcer l'état non-admin au démarrage
-            isAdmin = false;
-            sessionStorage.removeItem('isAdmin');
-            document.body.setAttribute('data-admin', 'false');
-    
-            // Cacher tous les éléments admin
-            const adminElements = document.querySelectorAll('.admin-only');
-            adminElements.forEach(el => {
-                el.style.display = 'none';
+        // Gestionnaire pour le bouton de connexion mobile/desktop
+        const loginButton = document.querySelector('.mobile-login button');
+        if (loginButton) {
+            loginButton.addEventListener('click', function(e) {
+                e.preventDefault();
+                openLoginModal();
             });
-    
-            // Supprimer les anciennes données de localStorage
-            localStorage.removeItem('isAdmin');
-    
-            updateUIState();
-        });
+        }
     
         function logout() {
             isAdmin = false;
@@ -605,443 +543,499 @@
             updateUIState();
         }
     
-        let employees = Storage.loadEmployees();
-    
-        // Mettre à jour le stockage après chaque modification
-        function updateStorage() {
-            Storage.saveEmployees(employees);
+        // Gestionnaire du formulaire d'ajout d'employé
+    document.getElementById('addEmployeeForm').addEventListener('submit', function(event) {
+        event.preventDefault();
+        const pseudo = document.getElementById('pseudo').value;
+        const startDate = document.getElementById('startDate').value;
+        const probation = document.getElementById('probation').checked;
+
+        const newEmployee = {
+            pseudo: pseudo,
+            startDate: startDate,
+            daysRemaining: probation ? 30 : 180,
+            lastMissionDate: 'N/A',
+            missions: [],
+            probation: probation,
+            kilometersRemaining: probation ? 2500 : 0,
+            note: ''
+        };
+
+        employees.push(newEmployee);
+        updateEmployeeTable();
+        updateStorage();
+        $('#addEmployeeModal').modal('hide');
+        document.getElementById('addEmployeeForm').reset();
+        
+        // Réinitialiser la date par défaut
+        const today = new Date().toISOString().split('T')[0];
+        document.getElementById('startDate').value = today;
+        
+        showNotification(`Employé ${pseudo} ajouté avec succès`);
+    });
+
+    // Fonction de calcul des jours gagnés en fonction des kilomètres
+    function calculateDaysGained(kilometers) {
+        if (kilometers >= 500 && kilometers < 2500) {
+            return 30;
+        } else if (kilometers >= 2500 && kilometers < 10000) {
+            return 30;
+        } else if (kilometers >= 10000 && kilometers < 25000) {
+            return 60;
+        } else if (kilometers >= 25000 && kilometers < 35000) {
+            return 90;
+        } else if (kilometers >= 35000 && kilometers < 50000) {
+            return 120;
+        } else if (kilometers >= 50000 && kilometers < 100000) {
+            return 150;
+        } else if (kilometers >= 100000) {
+            return 180;
         }
-    
-        // Définir la date du jour par défaut pour le champ date d'entrée
-        document.addEventListener('DOMContentLoaded', function() {
-            const today = new Date().toISOString().split('T')[0];
-            document.getElementById('startDate').value = today;
-        });
-    
-        document.getElementById('addEmployeeForm').addEventListener('submit', function(event) {
-            event.preventDefault();
-            const pseudo = document.getElementById('pseudo').value;
-            const startDate = document.getElementById('startDate').value;
-            const probation = document.getElementById('probation').checked;
-            const newEmployee = {
-                pseudo: pseudo,
-                startDate: startDate,
-                daysRemaining: probation ? 30 : 180,
-                lastMissionDate: 'N/A',
-                missions: [],
-                probation: probation,
-                kilometersRemaining: probation ? 2500 : 0,
-                note: ''
-            };
-            employees.push(newEmployee);
+        return 0;
+    }
+
+    // Gestionnaire du formulaire d'ajout de mission dans les détails
+    document.getElementById('addMissionFormDetails').addEventListener('submit', function(event) {
+        event.preventDefault();
+        const pseudo = document.getElementById('detailsPseudo').value;
+        const date = document.getElementById('dateDetails').value;
+        const kilometers = parseInt(document.getElementById('kilometersDetails').value);
+        
+        const employee = employees.find(emp => emp.pseudo === pseudo);
+        if (employee) {
+            // Création et fusion des missions du même mois
+            const newMission = { date, kilometers };
+            employee.missions = mergeMissionsForMonth([...employee.missions, newMission]);
+            employee.lastMissionDate = date;
+
+            // Mise à jour des jours restants
+            employee.daysRemaining = calculateRemainingDays(employee);
+
+            // Mise à jour des affichages
+            updateMissionsTable(employee);
             updateEmployeeTable();
             updateStorage();
-            $('#addEmployeeModal').modal('hide');
-            document.getElementById('addEmployeeForm').reset();
-            const today = new Date().toISOString().split('T')[0];
-            document.getElementById('startDate').value = today;
-            showNotification(`Employé ${pseudo} ajouté avec succès`);
-        });
-    
-        function calculateDaysGained(kilometers) {
-            if (kilometers >= 500 && kilometers < 2500) {
-                return 30;
-            } else if (kilometers >= 2500 && kilometers < 10000) {
-                return 30;
-            } else if (kilometers >= 10000 && kilometers < 25000) {
-                return 60;
-            } else if (kilometers >= 25000 && kilometers < 35000) {
-                return 90;
-            } else if (kilometers >= 35000 && kilometers < 50000) {
-                return 120;
-            } else if (kilometers >= 50000 && kilometers < 100000) {
-                return 150;
-            } else if (kilometers >= 100000) {
-                return 180;
-            }
-            return 0;
+            showEmployeeDetails(pseudo);
+            showNotification(`Mission ajoutée pour ${pseudo}`);
+            
+            // Reset du formulaire
+            document.getElementById('dateDetails').value = '';
+            document.getElementById('kilometersDetails').value = '';
         }
-    
-        document.getElementById('addMissionFormDetails').addEventListener('submit', function(event) {
-            event.preventDefault();
-            const pseudo = document.getElementById('detailsPseudo').value;
-            const date = document.getElementById('dateDetails').value;
-            const kilometers = parseInt(document.getElementById('kilometersDetails').value);
-            const employee = employees.find(emp => emp.pseudo === pseudo);
-            if (employee) {
-                // Fusion des missions du même mois
-                const newMission = { date, kilometers };
-                employee.missions = mergeMissionsForMonth([...employee.missions, newMission]);
-                employee.lastMissionDate = date;
-    
-                // Recalcul des jours
-                employee.daysRemaining = calculateRemainingDays(employee);
-    
-                updateMissionsTable(employee);
-                updateEmployeeTable();
-                updateStorage();
-                showEmployeeDetails(pseudo);
-                showNotification(`Mission ajoutée pour ${pseudo}`);
-            }
-        });
-    
-        document.getElementById('deleteEmployeeButton').addEventListener('click', function() {
-            const pseudo = document.getElementById('detailsPseudo').value;
-            const employeeIndex = employees.findIndex(emp => emp.pseudo === pseudo);
-            if (employeeIndex !== -1) {
-                employees.splice(employeeIndex, 1);
-                updateEmployeeTable();
-                updateStorage();
-                $('#employeeDetailsModal').modal('hide');
-            }
-        });
-    
-        function calculateMonthlyKilometers(employee) {
-            const currentMonth = new Date().getMonth();
-            const currentYear = new Date().getFullYear();
-            return employee.missions.reduce((total, mission) => {
-                const missionDate = new Date(mission.date);
-                if (missionDate.getMonth() === currentMonth && missionDate.getFullYear() === currentYear) {
-                    return total + mission.kilometers;
-                }
-                return total;
-            }, 0);
-        }
-    
-        function showEmployeeDetails(pseudo) {
-            if (!isAdmin) {
-                // Read-only version
-                const employee = employees.find(emp => emp.pseudo === pseudo);
-                if (employee) {
-                    alert(`Détails de ${employee.pseudo}\n` +
-                          `Jours restants: ${calculateRemainingDays(employee)}\n` +
-                          `Dernière mission: ${employee.lastMissionDate}`);
-                }
-                return;
-            }
-            const employee = employees.find(emp => emp.pseudo === pseudo);
-            if (employee) {
-                document.getElementById('detailsPseudo').value = employee.pseudo;
-                document.getElementById('detailsDaysRemaining').textContent = employee.daysRemaining;
-                document.getElementById('detailsLastMissionDate').textContent = employee.lastMissionDate ? new Date(employee.lastMissionDate).toLocaleDateString('fr-FR') : 'N/A';
-                document.getElementById('detailsProbation').checked = employee.probation;
-                if (employee.probation) {
-                    document.getElementById('kilometersRemainingContainer').style.display = 'block';
-                    document.getElementById('detailsKilometersRemaining').textContent = employee.kilometersRemaining;
-                } else {
-                    document.getElementById('kilometersRemainingContainer').style.display = 'none';
-                }
-                updateMissionsTable(employee);
-                document.getElementById('monthlyKilometers').textContent = `Kilomètres effectués ce mois-ci: ${calculateMonthlyKilometers(employee)}`;
-            }
-        }
-    
-        function updateMissionsTable(employee) {
-            const missionsTableBody = document.getElementById('missionsTableBody');
-            missionsTableBody.innerHTML = '';
-            employee.missions.forEach((mission, index) => {
-                const row = document.createElement('tr');
-                const dateCell = document.createElement('td');
-                dateCell.textContent = new Date(mission.date).toLocaleDateString('fr-FR');
-                const kilometersCell = document.createElement('td');
-                kilometersCell.textContent = mission.kilometers;
-                const deleteCell = document.createElement('td');
-                const deleteButton = document.createElement('button');
-                deleteButton.textContent = 'Supprimer';
-                deleteButton.className = 'btn btn-danger btn-sm';
-                deleteButton.onclick = () => deleteMission(employee, index);
-                deleteCell.appendChild(deleteButton);
-                row.appendChild(dateCell);
-                row.appendChild(kilometersCell);
-                row.appendChild(deleteCell);
-                const actionsCell = document.createElement('td');
-                const editButton = document.createElement('button');
-                editButton.textContent = 'Modifier';
-                editButton.className = 'btn btn-warning btn-sm mr-2';
-                editButton.onclick = () => editMission(employee, index);
-                actionsCell.appendChild(editButton);
-                actionsCell.appendChild(deleteButton);
-                row.appendChild(actionsCell);
-                missionsTableBody.appendChild(row);
-            });
-        }
-    
-        function calculateRemainingDays(employee) {
-            const today = new Date();
-            const startDate = new Date(employee.startDate);
-    
-            // Si en période probatoire
-            if (employee.probation) {
-                const totalKilometers = employee.missions.reduce((sum, mission) => sum + mission.kilometers, 0);
-                const daysElapsed = Math.floor((today - startDate) / (1000 * 60 * 60 * 24));
-    
-                if (totalKilometers >= 2500) {
-                    employee.probation = false;
-                    return 180;
-                } else {
-                    return 30 - daysElapsed; // Remove Math.max
-                }
-            }
-    
-            // Si pas de missions
-            if (employee.missions.length === 0) {
-                const daysElapsed = Math.floor((today - startDate) / (1000 * 60 * 60 * 24));
-                return 180 - daysElapsed; // Allow negative days
-            }
-    
-            // Trier les missions par date
-            const sortedMissions = [...employee.missions].sort((a, b) => new Date(a.date) - new Date(b.date));
-            let firstMissionDate = new Date(sortedMissions[0].date);
-            let remainingDays = 180;
-    
-            // Calculer les jours pour chaque mission
-            for (let i = 0; i < sortedMissions.length; i++) {
-                const mission = sortedMissions[i];
-                const missionDate = new Date(mission.date);
-                const daysElapsed = Math.floor((missionDate - firstMissionDate) / (1000 * 60 * 60 * 24));
-                remainingDays -= daysElapsed;
-    
-                const daysToAdd = calculateDaysGained(mission.kilometers);
-                remainingDays += daysToAdd;
-    
-                // Limite maximum de 360 jours
-                remainingDays = Math.min(360, remainingDays);
-                firstMissionDate = missionDate;
-            }
-    
-            // Soustraire les jours écoulés depuis la dernière mission
-            const daysElapsedSinceLastMission = Math.floor((today - firstMissionDate) / (1000 * 60 * 60 * 24));
-            remainingDays -= daysElapsedSinceLastMission;
-    
-            return remainingDays; // Allow negative days
-        }
-    
-        // Fonction pour fusionner les missions du même mois
-        function mergeMissionsForMonth(missions) {
-            const mergedMissions = new Map();
-    
-            missions.forEach(mission => {
-                const missionDate = new Date(mission.date);
-                const monthKey = `${missionDate.getFullYear()}-${missionDate.getMonth()}`;
-    
-                if (mergedMissions.has(monthKey)) {
-                    const existing = mergedMissions.get(monthKey);
-                    const existingDate = new Date(existing.date);
-                    const newDate = new Date(mission.date);
-    
-                    mergedMissions.set(monthKey, {
-                        date: newDate > existingDate ? mission.date : existing.date,
-                        kilometers: existing.kilometers + mission.kilometers,
-                        note: existing.note ? `${existing.note}; ${mission.note || ''}` : mission.note || ''
-                    });
-                } else {
-                    mergedMissions.set(monthKey, {...mission});
-                }
-            });
-    
-            return Array.from(mergedMissions.values());
-        }
-    
-        function deleteMission(employee, index) {
-            if (confirm('Êtes-vous sûr de vouloir supprimer cette mission ?')) {
-                employee.missions.splice(index, 1);
-                if (employee.missions.length > 0) {
-                    employee.lastMissionDate = employee.missions[employee.missions.length - 1].date;
-                } else {
-                    employee.lastMissionDate = 'N/A';
-                }
-                updateMissionsTable(employee);
-                updateEmployeeTable();
-                updateStorage();
-                showNotification('Mission supprimée');
-            }
-        }
-    
-        function formatDaysRemaining(days) {
-            if (days >= 0) {
-                return `${days} jours`;
-            } else {
-                return `${Math.abs(days)} jours de retard`;
-            }
-        }
-    
-        function updateEmployeeTable() {
-            const employeeTable = document.getElementById('employeeTable');
-            employeeTable.innerHTML = '';
-            employees.forEach(employee => {
-                // Mettre à jour les jours restants
-                employee.daysRemaining = calculateRemainingDays(employee);
-    
-                const row = document.createElement('tr');
-                const pseudoCell = document.createElement('td');
-                pseudoCell.textContent = employee.pseudo;
-    
-                const daysRemainingCell = document.createElement('td');
-                const formattedDays = formatDaysRemaining(employee.daysRemaining);
-                if (employee.daysRemaining < 0) {
-                    daysRemainingCell.style.color = 'red';
-                }
-                daysRemainingCell.textContent = formattedDays;
-    
-                const lastMissionDateCell = document.createElement('td');
-                lastMissionDateCell.textContent = employee.lastMissionDate !== 'N/A' ? 
-                    new Date(employee.lastMissionDate).toLocaleDateString('fr-FR') : 'N/A';
-    
-                const actionsCell = document.createElement('td');
-                const detailsButton = document.createElement('button');
-                detailsButton.textContent = 'Détails';
-                detailsButton.className = 'btn btn-info';
-                detailsButton.addEventListener('click', () => {
-                    $('#employeeDetailsModal').modal('show');
-                    showEmployeeDetails(employee.pseudo);
+    });
+
+    // Fonction de fusion des missions du même mois
+    function mergeMissionsForMonth(missions) {
+        const mergedMissions = new Map();
+
+        missions.forEach(mission => {
+            const missionDate = new Date(mission.date);
+            const monthKey = `${missionDate.getFullYear()}-${missionDate.getMonth()}`;
+
+            if (mergedMissions.has(monthKey)) {
+                const existing = mergedMissions.get(monthKey);
+                const existingDate = new Date(existing.date);
+                const newDate = new Date(mission.date);
+
+                mergedMissions.set(monthKey, {
+                    date: newDate > existingDate ? mission.date : existing.date,
+                    kilometers: existing.kilometers + mission.kilometers,
+                    note: existing.note ? `${existing.note}; ${mission.note || ''}` : mission.note || ''
                 });
-    
-                actionsCell.appendChild(detailsButton);
-                row.appendChild(pseudoCell);
-                row.appendChild(daysRemainingCell);
-                row.appendChild(lastMissionDateCell);
-                row.appendChild(actionsCell);
-                employeeTable.appendChild(row);
-            });
-        }
-    
-        document.addEventListener('DOMContentLoaded', async function() {
-            try {
-                // Show loading overlay
-                document.getElementById('loadingOverlay').style.display = 'flex';
-    
-                // Load employees data
-                employees = Storage.loadEmployees();
-    
-                // Update UI
-                updateEmployeeTable();
-    
-                // Hide loading overlay
-                document.getElementById('loadingOverlay').style.display = 'none';
-            } catch (error) {
-                console.error('Error loading data:', error);
-                showNotification('Erreur lors du chargement des données', 'error');
-                document.getElementById('loadingOverlay').style.display = 'none';
+            } else {
+                mergedMissions.set(monthKey, {...mission});
             }
         });
-    
-        // Update notification function to handle error state
-        function showNotification(message, type = 'success') {
-            const notification = document.getElementById('notification');
-            notification.style.display = 'block';
-            notification.style.backgroundColor = type === 'error' ? '#ff4444' : '#4CAF50';
-            document.getElementById('notificationMessage').textContent = message;
-            setTimeout(hideNotification, 3000);
-        }
-    
-        function hideNotification() {
-            document.getElementById('notification').style.display = 'none';
-        }
-    
-        let currentSort = { field: null, ascending: true };
-    
-        function sortEmployees(field) {
-            if (currentSort.field === field) {
-                currentSort.ascending = !currentSort.ascending;
+
+        return Array.from(mergedMissions.values());
+    }
+
+    // Fonction de calcul des jours restants
+    function calculateRemainingDays(employee) {
+        const today = new Date();
+        const startDate = new Date(employee.startDate);
+
+        // Gestion de la période probatoire
+        if (employee.probation) {
+            const totalKilometers = employee.missions.reduce((sum, mission) => sum + mission.kilometers, 0);
+            const daysElapsed = Math.floor((today - startDate) / (1000 * 60 * 60 * 24));
+
+            if (totalKilometers >= 2500) {
+                employee.probation = false;
+                return 180;
             } else {
-                currentSort.field = field;
-                currentSort.ascending = true;
+                return 30 - daysElapsed;
+            }
+        }
+
+        // Cas sans mission
+        if (employee.missions.length === 0) {
+            const daysElapsed = Math.floor((today - startDate) / (1000 * 60 * 60 * 24));
+            return 180 - daysElapsed;
+        }
+
+        // Calcul avec missions
+        const sortedMissions = [...employee.missions].sort((a, b) => new Date(a.date) - new Date(b.date));
+        let firstMissionDate = new Date(sortedMissions[0].date);
+        let remainingDays = 180;
+
+        // Calcul des jours pour chaque mission
+        for (let i = 0; i < sortedMissions.length; i++) {
+            const mission = sortedMissions[i];
+            const missionDate = new Date(mission.date);
+            const daysElapsed = Math.floor((missionDate - firstMissionDate) / (1000 * 60 * 60 * 24));
+            remainingDays -= daysElapsed;
+
+            const daysToAdd = calculateDaysGained(mission.kilometers);
+            remainingDays += daysToAdd;
+
+            // Maximum 360 jours
+            remainingDays = Math.min(360, remainingDays);
+            firstMissionDate = missionDate;
+        }
+
+        // Soustraction des jours depuis la dernière mission
+        const daysElapsedSinceLastMission = Math.floor((today - firstMissionDate) / (1000 * 60 * 60 * 24));
+        remainingDays -= daysElapsedSinceLastMission;
+
+        return remainingDays;
+    }
+
+    // Fonction de mise à jour de la table des missions
+    function updateMissionsTable(employee) {
+        const missionsTableBody = document.getElementById('missionsTableBody');
+        missionsTableBody.innerHTML = '';
+
+        employee.missions.forEach((mission, index) => {
+            const row = document.createElement('tr');
+            
+            const dateCell = document.createElement('td');
+            dateCell.textContent = new Date(mission.date).toLocaleDateString('fr-FR');
+            
+            const kilometersCell = document.createElement('td');
+            kilometersCell.textContent = mission.kilometers;
+            
+            const actionsCell = document.createElement('td');
+            
+            // Bouton de modification
+            const editButton = document.createElement('button');
+            editButton.textContent = 'Modifier';
+            editButton.className = 'btn btn-warning btn-sm mr-2';
+            editButton.onclick = () => editMission(employee, index);
+            
+            // Bouton de suppression
+            const deleteButton = document.createElement('button');
+            deleteButton.textContent = 'Supprimer';
+            deleteButton.className = 'btn btn-danger btn-sm';
+            deleteButton.onclick = () => deleteMission(employee, index);
+
+            actionsCell.appendChild(editButton);
+            actionsCell.appendChild(deleteButton);
+
+            row.appendChild(dateCell);
+            row.appendChild(kilometersCell);
+            row.appendChild(actionsCell);
+            
+            missionsTableBody.appendChild(row);
+        });
+    }
+
+        // Fonction de formatage des jours restants
+    function formatDaysRemaining(days) {
+        if (days >= 0) {
+            return `${days} jours`;
+        } else {
+            return `${Math.abs(days)} jours de retard`;
+        }
+    }
+
+    // Fonction de mise à jour de la table des employés
+    function updateEmployeeTable() {
+        const employeeTable = document.getElementById('employeeTable');
+        employeeTable.innerHTML = '';
+        
+        employees.forEach(employee => {
+            // Mise à jour des jours restants
+            employee.daysRemaining = calculateRemainingDays(employee);
+
+            const row = document.createElement('tr');
+            
+            // Cellule du pseudo
+            const pseudoCell = document.createElement('td');
+            pseudoCell.textContent = employee.pseudo;
+
+            // Cellule des jours restants
+            const daysRemainingCell = document.createElement('td');
+            const formattedDays = formatDaysRemaining(employee.daysRemaining);
+            if (employee.daysRemaining < 0) {
+                daysRemainingCell.style.color = 'red';
+            }
+            daysRemainingCell.textContent = formattedDays;
+
+            // Cellule de la dernière mission
+            const lastMissionDateCell = document.createElement('td');
+            if (employee.lastMissionDate !== 'N/A') {
+                const expiryDate = new Date();
+                expiryDate.setDate(expiryDate.getDate() + employee.daysRemaining);
+                lastMissionDateCell.textContent = `${new Date(employee.lastMissionDate).toLocaleDateString('fr-FR')} (expire le ${expiryDate.toLocaleDateString('fr-FR')})`;
+            } else {
+                lastMissionDateCell.textContent = 'N/A';
+            }
+
+            // Cellule des actions
+            const actionsCell = document.createElement('td');
+            const detailsButton = document.createElement('button');
+            detailsButton.textContent = 'Détails';
+            detailsButton.className = 'btn btn-info';
+            detailsButton.addEventListener('click', () => {
+                $('#employeeDetailsModal').modal('show');
+                showEmployeeDetails(employee.pseudo);
+            });
+
+            actionsCell.appendChild(detailsButton);
+            
+            // Assemblage de la ligne
+            row.appendChild(pseudoCell);
+            row.appendChild(daysRemainingCell);
+            row.appendChild(lastMissionDateCell);
+            row.appendChild(actionsCell);
+            
+            employeeTable.appendChild(row);
+        });
+
+        // Mise à jour de la date de dernière mise à jour
+        const lastUpdateElement = document.getElementById('lastUpdate');
+        if (lastUpdateElement) {
+            lastUpdateElement.textContent = `Dernière mise à jour: ${new Date().toLocaleString('fr-FR')}`;
+        }
+    }
+
+    // Variables pour le tri
+    let currentSort = { field: null, ascending: true };
+
+    // Fonction de tri des employés
+    function sortEmployees(field) {
+        if (currentSort.field === field) {
+            currentSort.ascending = !currentSort.ascending;
+        } else {
+            currentSort.field = field;
+            currentSort.ascending = true;
+        }
+        
+        employees.sort((a, b) => {
+            let comparison = 0;
+            
+            switch (field) {
+                case 'pseudo':
+                    comparison = a.pseudo.localeCompare(b.pseudo);
+                    break;
+                case 'days':
+                    comparison = calculateRemainingDays(a) - calculateRemainingDays(b);
+                    break;
+                case 'lastMission':
+                    const dateA = a.lastMissionDate === 'N/A' ? new Date(0) : new Date(a.lastMissionDate);
+                    const dateB = b.lastMissionDate === 'N/A' ? new Date(0) : new Date(b.lastMissionDate);
+                    comparison = dateA - dateB;
+                    break;
             }
             
-            employees.sort((a, b) => {
-                let comparison = 0;
-                
-                switch (field) {
-                    case 'pseudo':
-                        comparison = a.pseudo.localeCompare(b.pseudo);
-                        break;
-                    case 'days':
-                        comparison = calculateRemainingDays(a) - calculateRemainingDays(b);
-                        break;
-                    case 'lastMission':
-                        const dateA = a.lastMissionDate === 'N/A' ? new Date(0) : new Date(a.lastMissionDate);
-                        const dateB = b.lastMissionDate === 'N/A' ? new Date(0) : new Date(b.lastMissionDate);
-                        comparison = dateA - dateB;
-                        break;
-                }
-                
-                return currentSort.ascending ? comparison : -comparison;
-            });
+            return currentSort.ascending ? comparison : -comparison;
+        });
+        
+        updateEmployeeTable();
+    }
+
+    // Fonction pour afficher les détails d'un employé
+    function showEmployeeDetails(pseudo) {
+        if (!isAdmin) {
+            // Version lecture seule
+            const employee = employees.find(emp => emp.pseudo === pseudo);
+            if (employee) {
+                alert(`Détails de ${employee.pseudo}\n` +
+                      `Jours restants: ${calculateRemainingDays(employee)}\n` +
+                      `Dernière mission: ${employee.lastMissionDate}`);
+            }
+            return;
+        }
+
+        const employee = employees.find(emp => emp.pseudo === pseudo);
+        if (employee) {
+            document.getElementById('detailsPseudo').value = employee.pseudo;
+            document.getElementById('detailsDaysRemaining').textContent = employee.daysRemaining;
+            document.getElementById('detailsLastMissionDate').textContent = 
+                employee.lastMissionDate !== 'N/A' ? 
+                new Date(employee.lastMissionDate).toLocaleDateString('fr-FR') : 
+                'N/A';
+            document.getElementById('detailsProbation').checked = employee.probation;
+
+            // Affichage des kilomètres restants pour la période probatoire
+            const kilometersContainer = document.getElementById('kilometersRemainingContainer');
+            if (employee.probation) {
+                kilometersContainer.style.display = 'block';
+                document.getElementById('detailsKilometersRemaining').textContent = employee.kilometersRemaining;
+            } else {
+                kilometersContainer.style.display = 'none';
+            }
+
+            // Mise à jour du tableau des missions
+            updateMissionsTable(employee);
+            
+            // Mise à jour des kilomètres mensuels
+            document.getElementById('monthlyKilometers').textContent = 
+                `Kilomètres effectués ce mois-ci: ${calculateMonthlyKilometers(employee)}`;
+        }
+    }
+
+    // Fonction de calcul des kilomètres mensuels
+    function calculateMonthlyKilometers(employee) {
+        const currentMonth = new Date().getMonth();
+        const currentYear = new Date().getFullYear();
+        
+        return employee.missions.reduce((total, mission) => {
+            const missionDate = new Date(mission.date);
+            if (missionDate.getMonth() === currentMonth && 
+                missionDate.getFullYear() === currentYear) {
+                return total + mission.kilometers;
+            }
+            return total;
+        }, 0);
+    }
+
+    // Fonction d'affichage des notifications
+    function showNotification(message, type = 'success') {
+        const notification = document.getElementById('notification');
+        notification.style.display = 'block';
+        notification.style.backgroundColor = type === 'error' ? '#ff4444' : '#4CAF50';
+        document.getElementById('notificationMessage').textContent = message;
+        setTimeout(hideNotification, 3000);
+    }
+
+    // Fonction pour masquer les notifications
+    function hideNotification() {
+        document.getElementById('notification').style.display = 'none';
+    }
+
+    // Fonction de mise à jour de l'état de l'interface
+    function updateUIState() {
+        const adminElements = document.querySelectorAll('.admin-only');
+        adminElements.forEach(el => {
+            el.style.display = isAdmin ? 'block' : 'none';
+        });
+    }
+
+    // Fonction d'édition d'une mission
+    function editMission(employee, missionIndex) {
+        const mission = employee.missions[missionIndex];
+        document.getElementById('editMissionIndex').value = missionIndex;
+        document.getElementById('editMissionEmployee').value = employee.pseudo;
+        document.getElementById('editMissionDate').value = new Date(mission.date).toISOString().split('T')[0];
+        document.getElementById('editMissionKm').value = mission.kilometers;
+        $('#editMissionModal').modal('show');
+    }
+
+    // Gestionnaire du formulaire d'édition de mission
+    document.getElementById('editMissionForm').addEventListener('submit', function(event) {
+        event.preventDefault();
+        const index = document.getElementById('editMissionIndex').value;
+        const pseudo = document.getElementById('editMissionEmployee').value;
+        const date = document.getElementById('editMissionDate').value;
+        const kilometers = parseInt(document.getElementById('editMissionKm').value);
+
+        const employee = employees.find(emp => emp.pseudo === pseudo);
+        if (employee && employee.missions[index]) {
+            employee.missions[index] = { date, kilometers };
+            employee.missions = mergeMissionsForMonth(employee.missions);
+            employee.lastMissionDate = employee.missions[employee.missions.length - 1].date;
+            employee.daysRemaining = calculateRemainingDays(employee);
+
+            updateMissionsTable(employee);
+            updateEmployeeTable();
+            updateStorage();
+            $('#editMissionModal').modal('hide');
+            showNotification('Mission modifiée avec succès');
+        }
+    });
+
+    // Fonction de suppression d'une mission
+    function deleteMission(employee, missionIndex) {
+        if (confirm('Êtes-vous sûr de vouloir supprimer cette mission ?')) {
+            employee.missions.splice(missionIndex, 1);
+            if (employee.missions.length > 0) {
+                employee.lastMissionDate = employee.missions[employee.missions.length - 1].date;
+            } else {
+                employee.lastMissionDate = 'N/A';
+            }
+            employee.daysRemaining = calculateRemainingDays(employee);
+
+            updateMissionsTable(employee);
+            updateEmployeeTable();
+            updateStorage();
+            showNotification('Mission supprimée');
+        }
+    }
+
+    // Fonction de copie sur Discord
+    function copyToDiscord() {
+        let discordText = "**État des employés LPN**\n";
+        
+        // Tri des employés par jours restants
+        const sortedEmployees = [...employees].sort((a, b) => {
+            const daysA = calculateRemainingDays(a);
+            const daysB = calculateRemainingDays(b);
+            return daysA - daysB;
+        });
+
+        sortedEmployees.forEach(employee => {
+            const days = calculateRemainingDays(employee);
+            const status = days < 0 ? '🔴' : days <= 30 ? '🟡' : '🟢';
+            const probationStatus = employee.probation ? ' (Période d\'essai)' : '';
+            
+            discordText += `${status} **${employee.pseudo}**${probationStatus}: ${formatDaysRemaining(days)}\n`;
+        });
+
+        // Copie dans le presse-papier
+        navigator.clipboard.writeText(discordText).then(() => {
+            showNotification('Texte copié dans le presse-papier');
+        }).catch(err => {
+            console.error('Erreur lors de la copie:', err);
+            showNotification('Erreur lors de la copie', 'error');
+        });
+    }
+
+    // Fonction de suppression d'un employé
+    document.getElementById('deleteEmployeeButton').addEventListener('click', function() {
+        const pseudo = document.getElementById('detailsPseudo').value;
+        if (confirm(`Êtes-vous sûr de vouloir supprimer l'employé ${pseudo} ?`)) {
+            const index = employees.findIndex(emp => emp.pseudo === pseudo);
+            if (index !== -1) {
+                employees.splice(index, 1);
+                updateStorage();
+                updateEmployeeTable();
+                $('#employeeDetailsModal').modal('hide');
+                showNotification(`Employé ${pseudo} supprimé`);
+            }
+        }
+    });
+
+    // Gestionnaire du formulaire de détails employé
+    document.getElementById('employeeDetailsForm').addEventListener('submit', function(event) {
+        event.preventDefault();
+        const pseudo = document.getElementById('detailsPseudo').value;
+        const probation = document.getElementById('detailsProbation').checked;
+        
+        const employee = employees.find(emp => emp.pseudo === pseudo);
+        if (employee) {
+            employee.probation = probation;
+            if (!probation && employee.kilometersRemaining) {
+                delete employee.kilometersRemaining;
+            }
             
             updateEmployeeTable();
+            updateStorage();
+            showNotification('Employé mis à jour');
         }
+    });
 
-        function updateEmployeeTable() {
-            const employeeTable = document.getElementById('employeeTable');
-            employeeTable.innerHTML = '';
-            employees.forEach(employee => {
-                const row = document.createElement('tr');
-                const pseudoCell = document.createElement('td');
-                pseudoCell.textContent = employee.pseudo;
-                
-                const daysRemainingCell = document.createElement('td');
-                const remainingDays = calculateRemainingDays(employee);
-                const expiryDate = new Date();
-                expiryDate.setDate(expiryDate.getDate() + remainingDays);
-                daysRemainingCell.textContent = `${remainingDays} (expire le ${expiryDate.toLocaleDateString('fr-FR')})`;
-                if (remainingDays < 0) {
-                    daysRemainingCell.style.color = 'red';
-                }
-                
-                const lastMissionDateCell = document.createElement('td');
-                lastMissionDateCell.textContent = employee.lastMissionDate !== 'N/A' ? 
-                    new Date(employee.lastMissionDate).toLocaleDateString('fr-FR') : 'N/A';
-                
-                const actionsCell = document.createElement('td');
-                const detailsButton = document.createElement('button');
-                detailsButton.textContent = 'Détails';
-                detailsButton.className = 'btn btn-info';
-                detailsButton.addEventListener('click', () => {
-                    $('#employeeDetailsModal').modal('show');
-                    showEmployeeDetails(employee.pseudo);
-                });
-                
-                actionsCell.appendChild(detailsButton);
-                row.appendChild(pseudoCell);
-                row.appendChild(daysRemainingCell);
-                row.appendChild(lastMissionDateCell);
-                row.appendChild(actionsCell);
-                employeeTable.appendChild(row);
-            });
-        }
-
-        document.addEventListener('DOMContentLoaded', async function() {
-            try {
-                // Show loading overlay
-                document.getElementById('loadingOverlay').style.display = 'flex';
-                
-                // Load employees data
-                employees = await Storage.loadEmployees();
-                
-                // Update UI
-                updateEmployeeTable();
-                
-                // Hide loading overlay
-                document.getElementById('loadingOverlay').style.display = 'none';
-            } catch (error) {
-                console.error('Error loading data:', error);
-                showNotification('Erreur lors du chargement des données', 'error');
-                document.getElementById('loadingOverlay').style.display = 'none';
-            }
-        });
-
-        // Update notification function to handle error state
-        function showNotification(message, type = 'success') {
-            const notification = document.getElementById('notification');
-            notification.style.display = 'block';
-            notification.style.backgroundColor = type === 'error' ? '#ff4444' : '#4CAF50';
-            document.getElementById('notificationMessage').textContent = message;
-            setTimeout(hideNotification, 3000);
-        }
-
-        function hideNotification() {
-            document.getElementById('notification').style.display = 'none';
-        }
     </script>
 </body>
 </html>
