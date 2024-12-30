@@ -191,6 +191,12 @@
         label {
             color: var(--text-color);
         }
+
+        [data-theme="dark"] td, 
+        [data-theme="dark"] #detailsDaysRemaining,
+        [data-theme="dark"] .table {
+            color: var(--text-color) !important;
+        }
     </style>
 </head>
 <body data-admin="false">
@@ -384,27 +390,29 @@
         </div>
     </div>
 
-    <!-- Modal Edit Mission -->
-    <div class="modal fade" id="editMissionModal" tabindex="-1">
-        <div class="modal-dialog">
+    <!-- Modal pour éditer une mission -->
+    <div class="modal fade" id="editMissionModal" tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title">Modifier la Mission</h5>
-                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                    <h5 class="modal-title">Modifier la mission</h5>
+                    <button type="button" class="close" data-dismiss="modal">
+                        <span>&times;</span>
+                    </button>
                 </div>
                 <div class="modal-body">
                     <form id="editMissionForm">
                         <input type="hidden" id="editMissionIndex">
                         <input type="hidden" id="editMissionEmployee">
                         <div class="form-group">
-                            <label>Date:</label>
+                            <label for="editMissionDate">Date:</label>
                             <input type="date" id="editMissionDate" class="form-control" required>
                         </div>
                         <div class="form-group">
-                            <label>Kilomètres:</label>
+                            <label for="editMissionKm">Kilomètres:</label>
                             <input type="number" id="editMissionKm" class="form-control" required>
                         </div>
-                        <button type="submit" class="btn btn-primary">Sauvegarder</button>
+                        <button type="submit" class="btn btn-primary">Mettre à jour</button>
                     </form>
                 </div>
             </div>
@@ -460,6 +468,42 @@
             document.body.setAttribute('data-admin', 'false');
             updateUIState();
             showNotification('Déconnexion réussie');
+        }
+
+        window.editMission = function(pseudo, index) {
+            if (!isAdmin) return;
+            
+            const employee = employees.find(emp => emp.pseudo === pseudo);
+            if (!employee || !employee.missions[index]) return;
+
+            const mission = employee.missions[index];
+            document.getElementById('editMissionIndex').value = index;
+            document.getElementById('editMissionEmployee').value = pseudo;
+            document.getElementById('editMissionDate').value = new Date(mission.date).toISOString().split('T')[0];
+            document.getElementById('editMissionKm').value = mission.kilometers;
+
+            $('#employeeDetailsModal').modal('hide');
+            $('#editMissionModal').modal('show');
+        }
+
+        window.deleteMission = async function(pseudo, index) {
+            if (!isAdmin) return;
+            
+            if (confirm('Êtes-vous sûr de vouloir supprimer cette mission ?')) {
+                const employeeIndex = employees.findIndex(emp => emp.pseudo === pseudo);
+                if (employeeIndex === -1) return;
+
+                employees[employeeIndex].missions.splice(index, 1);
+                
+                // Mettre à jour la dernière mission
+                const lastMission = employees[employeeIndex].missions[employees[employeeIndex].missions.length - 1];
+                employees[employeeIndex].lastMissionDate = lastMission ? new Date(lastMission.date).toISOString().split('T')[0] : 'N/A';
+
+                await Storage.saveEmployees(employees);
+                showEmployeeDetails(pseudo);
+                updateEmployeeTable();
+                showNotification('Mission supprimée avec succès');
+            }
         }
 
         // Variables globales
@@ -602,6 +646,39 @@
                 console.error('Error loading data:', error);
                 showNotification('Erreur lors du chargement des données', 'error');
                 document.getElementById('loadingOverlay').style.display = 'none';
+            }
+        });
+
+        document.getElementById('editMissionForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            if (!isAdmin) return;
+
+            const index = parseInt(document.getElementById('editMissionIndex').value);
+            const pseudo = document.getElementById('editMissionEmployee').value;
+            const date = document.getElementById('editMissionDate').value;
+            const kilometers = parseInt(document.getElementById('editMissionKm').value);
+
+            const employee = employees.find(emp => emp.pseudo === pseudo);
+            if (!employee || !employee.missions[index]) return;
+
+            employee.missions[index] = {
+                date: date,
+                kilometers: kilometers
+            };
+
+            // Mettre à jour la dernière mission si nécessaire
+            const lastMission = employee.missions[employee.missions.length - 1];
+            employee.lastMissionDate = lastMission ? new Date(lastMission.date).toISOString().split('T')[0] : 'N/A';
+
+            try {
+                await Storage.saveEmployees(employees);
+                $('#editMissionModal').modal('hide');
+                showEmployeeDetails(pseudo);
+                updateEmployeeTable();
+                showNotification('Mission modifiée avec succès');
+            } catch (error) {
+                console.error('Erreur lors de la modification:', error);
+                showNotification('Erreur lors de la modification', 'error');
             }
         });
 
@@ -779,6 +856,10 @@
         function showEmployeeDetails(pseudo) {
             const employee = employees.find(emp => emp.pseudo === pseudo);
             if (!employee) return;
+
+            // Masquer complètement la section d'ajout de mission pour les non-admins
+            const addMissionSection = document.querySelector('#addMissionFormDetails').closest('div');
+            addMissionSection.style.display = isAdmin ? 'block' : 'none';
 
             // Masquer/Afficher les éléments selon les droits admin
             const adminElements = document.querySelectorAll('.modal .admin-only');
