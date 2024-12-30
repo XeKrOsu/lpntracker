@@ -40,6 +40,7 @@
             width: 100%;
             border-collapse: collapse;
             margin-bottom: 20px;
+            color: var(--text-color);
         }
 
         table, th, td {
@@ -55,12 +56,28 @@
             background-color: var(--table-header);
         }
 
+        .table td, .table th {
+            color: var(--text-color);
+            border-color: var(--table-border);
+        }
+
         .form-container {
             background-color: var(--modal-bg);
             padding: 20px;
             border: 1px solid var(--table-border);
             border-radius: 5px;
             margin-bottom: 20px;
+        }
+
+        .form-control {
+            background-color: var(--input-bg);
+            color: var(--input-text);
+            border-color: var(--table-border);
+        }
+
+        .form-control:focus {
+            background-color: var(--input-bg);
+            color: var(--input-text);
         }
 
         input[type="text"], 
@@ -169,6 +186,10 @@
 
         .admin-only {
             display: none;
+        }
+
+        label {
+            color: var(--text-color);
         }
     </style>
 </head>
@@ -742,6 +763,103 @@
             });
 
             updateEmployeeTable();
+        }
+
+        function showEmployeeDetails(pseudo) {
+            const employee = employees.find(emp => emp.pseudo === pseudo);
+            if (!employee) return;
+
+            // Remplir les champs du modal
+            document.getElementById('detailsPseudo').value = employee.pseudo;
+            document.getElementById('detailsDaysRemaining').textContent = formatDaysRemaining(employee.daysRemaining);
+            document.getElementById('detailsLastMissionDate').textContent = employee.lastMissionDate;
+            document.getElementById('detailsProbation').checked = employee.probation;
+
+            if (employee.probation) {
+                const totalKilometers = employee.missions.reduce((sum, mission) => sum + mission.kilometers, 0);
+                document.getElementById('detailsKilometersRemaining').textContent = 
+                    `${Math.max(0, 2500 - totalKilometers)} km restants pour sortir de la période d'essai`;
+                document.getElementById('kilometersRemainingContainer').style.display = 'block';
+            } else {
+                document.getElementById('kilometersRemainingContainer').style.display = 'none';
+            }
+
+            // Afficher les missions
+            const missionsTableBody = document.getElementById('missionsTableBody');
+            missionsTableBody.innerHTML = '';
+
+            employee.missions.forEach((mission, index) => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${new Date(mission.date).toLocaleDateString('fr-FR')}</td>
+                    <td>${mission.kilometers} km</td>
+                    <td>
+                        <button class="btn btn-sm btn-warning mr-2" onclick="editMission('${employee.pseudo}', ${index})">
+                            Modifier
+                        </button>
+                        <button class="btn btn-sm btn-danger" onclick="deleteMission('${employee.pseudo}', ${index})">
+                            Supprimer
+                        </button>
+                    </td>
+                `;
+                missionsTableBody.appendChild(row);
+            });
+
+            // Calculer les kilomètres mensuels
+            const monthlyKm = calculateMonthlyKilometers(employee.missions);
+            document.getElementById('monthlyKilometers').innerHTML = Object.entries(monthlyKm)
+                .map(([month, km]) => `${month}: ${km} km`)
+                .join('<br>');
+
+            // Afficher le modal
+            $('#employeeDetailsModal').modal('show');
+        }
+
+        function calculateMonthlyKilometers(missions) {
+            const monthlyKm = {};
+            missions.forEach(mission => {
+                const date = new Date(mission.date);
+                const monthYear = `${date.toLocaleString('fr-FR', { month: 'long', year: 'numeric' })}`;
+                monthlyKm[monthYear] = (monthlyKm[monthYear] || 0) + mission.kilometers;
+            });
+            return monthlyKm;
+        }
+
+        // Fonctions pour éditer et supprimer les missions
+        function editMission(pseudo, index) {
+            if (!isAdmin) return;
+            
+            const employee = employees.find(emp => emp.pseudo === pseudo);
+            if (!employee || !employee.missions[index]) return;
+
+            const mission = employee.missions[index];
+            document.getElementById('editMissionIndex').value = index;
+            document.getElementById('editMissionEmployee').value = pseudo;
+            document.getElementById('editMissionDate').value = mission.date.split('T')[0];
+            document.getElementById('editMissionKm').value = mission.kilometers;
+
+            $('#employeeDetailsModal').modal('hide');
+            $('#editMissionModal').modal('show');
+        }
+
+        async function deleteMission(pseudo, index) {
+            if (!isAdmin) return;
+            
+            if (confirm('Êtes-vous sûr de vouloir supprimer cette mission ?')) {
+                const employeeIndex = employees.findIndex(emp => emp.pseudo === pseudo);
+                if (employeeIndex === -1) return;
+
+                employees[employeeIndex].missions.splice(index, 1);
+                
+                // Mettre à jour la dernière mission
+                const lastMission = employees[employeeIndex].missions[employees[employeeIndex].missions.length - 1];
+                employees[employeeIndex].lastMissionDate = lastMission ? lastMission.date : 'N/A';
+
+                await Storage.saveEmployees(employees);
+                showEmployeeDetails(pseudo);
+                updateEmployeeTable();
+                showNotification('Mission supprimée avec succès');
+            }
         }
     </script>
 </body>
