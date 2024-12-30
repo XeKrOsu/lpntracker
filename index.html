@@ -163,7 +163,7 @@
         }
 
         .form-control {
-            background-color: var(--bg-color);
+            background-color: var (--bg-color);
             color: var(--text-color);
             border-color: var(--table-border);
         }
@@ -508,7 +508,7 @@
         // Initialize Firebase
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
-        
+    
         // Storage implementation
         class Storage {
             static saveEmployees(employees) {
@@ -540,10 +540,10 @@
             Storage.saveEmployees(employees);
             updateEmployeesList();
         }
-
+    
         const ADMIN_HASH = '9903e7a522a805f505017d3593a42602d6bfbbfa82b6bf008558ee6db69ff4a6';
         const SALT = 'LPN2024';
-
+    
         async function hashPassword(password) {
             const encoder = new TextEncoder();
             const data = encoder.encode(password + SALT);
@@ -551,16 +551,16 @@
             const hashArray = Array.from(new Uint8Array(hashBuffer));
             return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
         }
-
+    
         async function checkAdminPassword() {
             $('#loginModal').modal('show');
         }
-
+    
         // Add login form handler
         document.getElementById('loginForm').addEventListener('submit', async function(e) {
             e.preventDefault();
             const password = document.getElementById('adminPassword').value;
-            
+    
             const hashedPassword = await hashPassword(password);
             if (hashedPassword === ADMIN_HASH) {
                 isAdmin = true;
@@ -574,29 +574,29 @@
                 showNotification('Mot de passe incorrect', 'error');
             }
         });
-
+    
         // Add mobile login trigger
         document.querySelector('.mobile-login button').addEventListener('click', checkAdminPassword);
-
+    
         // Update authentication check on load
         document.addEventListener('DOMContentLoaded', function() {
             // Forcer l'état non-admin au démarrage
             isAdmin = false;
             sessionStorage.removeItem('isAdmin');
             document.body.setAttribute('data-admin', 'false');
-            
+    
             // Cacher tous les éléments admin
             const adminElements = document.querySelectorAll('.admin-only');
             adminElements.forEach(el => {
                 el.style.display = 'none';
             });
-
+    
             // Supprimer les anciennes données de localStorage
             localStorage.removeItem('isAdmin');
-            
+    
             updateUIState();
         });
-
+    
         function logout() {
             isAdmin = false;
             sessionStorage.removeItem('isAdmin');
@@ -604,20 +604,20 @@
             showNotification('Déconnexion effectuée');
             updateUIState();
         }
-
+    
         let employees = Storage.loadEmployees();
-
+    
         // Mettre à jour le stockage après chaque modification
         function updateStorage() {
             Storage.saveEmployees(employees);
         }
-
+    
         // Définir la date du jour par défaut pour le champ date d'entrée
         document.addEventListener('DOMContentLoaded', function() {
             const today = new Date().toISOString().split('T')[0];
             document.getElementById('startDate').value = today;
         });
-
+    
         document.getElementById('addEmployeeForm').addEventListener('submit', function(event) {
             event.preventDefault();
             const pseudo = document.getElementById('pseudo').value;
@@ -642,7 +642,7 @@
             document.getElementById('startDate').value = today;
             showNotification(`Employé ${pseudo} ajouté avec succès`);
         });
-
+    
         function calculateDaysGained(kilometers) {
             if (kilometers >= 500 && kilometers < 2500) {
                 return 30;
@@ -661,7 +661,7 @@
             }
             return 0;
         }
-
+    
         document.getElementById('addMissionFormDetails').addEventListener('submit', function(event) {
             event.preventDefault();
             const pseudo = document.getElementById('detailsPseudo').value;
@@ -673,10 +673,10 @@
                 const newMission = { date, kilometers };
                 employee.missions = mergeMissionsForMonth([...employee.missions, newMission]);
                 employee.lastMissionDate = date;
-                
+    
                 // Recalcul des jours
                 employee.daysRemaining = calculateRemainingDays(employee);
-                
+    
                 updateMissionsTable(employee);
                 updateEmployeeTable();
                 updateStorage();
@@ -684,7 +684,7 @@
                 showNotification(`Mission ajoutée pour ${pseudo}`);
             }
         });
-
+    
         document.getElementById('deleteEmployeeButton').addEventListener('click', function() {
             const pseudo = document.getElementById('detailsPseudo').value;
             const employeeIndex = employees.findIndex(emp => emp.pseudo === pseudo);
@@ -695,7 +695,7 @@
                 $('#employeeDetailsModal').modal('hide');
             }
         });
-
+    
         function calculateMonthlyKilometers(employee) {
             const currentMonth = new Date().getMonth();
             const currentYear = new Date().getFullYear();
@@ -707,7 +707,7 @@
                 return total;
             }, 0);
         }
-
+    
         function showEmployeeDetails(pseudo) {
             if (!isAdmin) {
                 // Read-only version
@@ -735,7 +735,7 @@
                 document.getElementById('monthlyKilometers').textContent = `Kilomètres effectués ce mois-ci: ${calculateMonthlyKilometers(employee)}`;
             }
         }
-
+    
         function updateMissionsTable(employee) {
             const missionsTableBody = document.getElementById('missionsTableBody');
             missionsTableBody.innerHTML = '';
@@ -765,16 +765,16 @@
                 missionsTableBody.appendChild(row);
             });
         }
-
+    
         function calculateRemainingDays(employee) {
             const today = new Date();
             const startDate = new Date(employee.startDate);
-            
+    
             // Si en période probatoire
             if (employee.probation) {
                 const totalKilometers = employee.missions.reduce((sum, mission) => sum + mission.kilometers, 0);
                 const daysElapsed = Math.floor((today - startDate) / (1000 * 60 * 60 * 24));
-                
+    
                 if (totalKilometers >= 2500) {
                     employee.probation = false;
                     return 180;
@@ -782,53 +782,53 @@
                     return 30 - daysElapsed; // Remove Math.max
                 }
             }
-            
+    
             // Si pas de missions
             if (employee.missions.length === 0) {
                 const daysElapsed = Math.floor((today - startDate) / (1000 * 60 * 60 * 24));
                 return 180 - daysElapsed; // Allow negative days
             }
-            
+    
             // Trier les missions par date
             const sortedMissions = [...employee.missions].sort((a, b) => new Date(a.date) - new Date(b.date));
             let firstMissionDate = new Date(sortedMissions[0].date);
             let remainingDays = 180;
-            
+    
             // Calculer les jours pour chaque mission
             for (let i = 0; i < sortedMissions.length; i++) {
                 const mission = sortedMissions[i];
                 const missionDate = new Date(mission.date);
                 const daysElapsed = Math.floor((missionDate - firstMissionDate) / (1000 * 60 * 60 * 24));
                 remainingDays -= daysElapsed;
-                
+    
                 const daysToAdd = calculateDaysGained(mission.kilometers);
                 remainingDays += daysToAdd;
-                
+    
                 // Limite maximum de 360 jours
                 remainingDays = Math.min(360, remainingDays);
                 firstMissionDate = missionDate;
             }
-            
+    
             // Soustraire les jours écoulés depuis la dernière mission
             const daysElapsedSinceLastMission = Math.floor((today - firstMissionDate) / (1000 * 60 * 60 * 24));
             remainingDays -= daysElapsedSinceLastMission;
-            
+    
             return remainingDays; // Allow negative days
         }
-
+    
         // Fonction pour fusionner les missions du même mois
         function mergeMissionsForMonth(missions) {
             const mergedMissions = new Map();
-            
+    
             missions.forEach(mission => {
                 const missionDate = new Date(mission.date);
                 const monthKey = `${missionDate.getFullYear()}-${missionDate.getMonth()}`;
-                
+    
                 if (mergedMissions.has(monthKey)) {
                     const existing = mergedMissions.get(monthKey);
                     const existingDate = new Date(existing.date);
                     const newDate = new Date(mission.date);
-                    
+    
                     mergedMissions.set(monthKey, {
                         date: newDate > existingDate ? mission.date : existing.date,
                         kilometers: existing.kilometers + mission.kilometers,
@@ -838,10 +838,10 @@
                     mergedMissions.set(monthKey, {...mission});
                 }
             });
-            
+    
             return Array.from(mergedMissions.values());
         }
-
+    
         function deleteMission(employee, index) {
             if (confirm('Êtes-vous sûr de vouloir supprimer cette mission ?')) {
                 employee.missions.splice(index, 1);
@@ -856,7 +856,7 @@
                 showNotification('Mission supprimée');
             }
         }
-
+    
         function formatDaysRemaining(days) {
             if (days >= 0) {
                 return `${days} jours`;
@@ -864,29 +864,29 @@
                 return `${Math.abs(days)} jours de retard`;
             }
         }
-
+    
         function updateEmployeeTable() {
             const employeeTable = document.getElementById('employeeTable');
             employeeTable.innerHTML = '';
             employees.forEach(employee => {
                 // Mettre à jour les jours restants
                 employee.daysRemaining = calculateRemainingDays(employee);
-                
+    
                 const row = document.createElement('tr');
                 const pseudoCell = document.createElement('td');
                 pseudoCell.textContent = employee.pseudo;
-                
+    
                 const daysRemainingCell = document.createElement('td');
                 const formattedDays = formatDaysRemaining(employee.daysRemaining);
                 if (employee.daysRemaining < 0) {
                     daysRemainingCell.style.color = 'red';
                 }
                 daysRemainingCell.textContent = formattedDays;
-                
+    
                 const lastMissionDateCell = document.createElement('td');
                 lastMissionDateCell.textContent = employee.lastMissionDate !== 'N/A' ? 
                     new Date(employee.lastMissionDate).toLocaleDateString('fr-FR') : 'N/A';
-                
+    
                 const actionsCell = document.createElement('td');
                 const detailsButton = document.createElement('button');
                 detailsButton.textContent = 'Détails';
@@ -895,7 +895,7 @@
                     $('#employeeDetailsModal').modal('show');
                     showEmployeeDetails(employee.pseudo);
                 });
-                
+    
                 actionsCell.appendChild(detailsButton);
                 row.appendChild(pseudoCell);
                 row.appendChild(daysRemainingCell);
@@ -904,18 +904,18 @@
                 employeeTable.appendChild(row);
             });
         }
-
+    
         document.addEventListener('DOMContentLoaded', async function() {
             try {
                 // Show loading overlay
                 document.getElementById('loadingOverlay').style.display = 'flex';
-                
+    
                 // Load employees data
                 employees = Storage.loadEmployees();
-                
+    
                 // Update UI
                 updateEmployeeTable();
-                
+    
                 // Hide loading overlay
                 document.getElementById('loadingOverlay').style.display = 'none';
             } catch (error) {
@@ -924,7 +924,7 @@
                 document.getElementById('loadingOverlay').style.display = 'none';
             }
         });
-
+    
         // Update notification function to handle error state
         function showNotification(message, type = 'success') {
             const notification = document.getElementById('notification');
@@ -933,13 +933,13 @@
             document.getElementById('notificationMessage').textContent = message;
             setTimeout(hideNotification, 3000);
         }
-
+    
         function hideNotification() {
             document.getElementById('notification').style.display = 'none';
         }
-
+    
         let currentSort = { field: null, ascending: true };
-
+    
         function sortEmployees(field) {
             if (currentSort.field === field) {
                 currentSort.ascending = !currentSort.ascending;
@@ -1000,8 +1000,8 @@
                     $('#employeeDetailsModal').modal('show');
                     showEmployeeDetails(employee.pseudo);
                 });
-                actionsCell.appendChild(detailsButton);
                 
+                actionsCell.appendChild(detailsButton);
                 row.appendChild(pseudoCell);
                 row.appendChild(daysRemainingCell);
                 row.appendChild(lastMissionDateCell);
@@ -1010,339 +1010,38 @@
             });
         }
 
-        // Dark mode toggle
-        const themeSwitch = document.getElementById('themeSwitch');
-        themeSwitch.addEventListener('change', () => {
-            document.body.setAttribute('data-theme', themeSwitch.checked ? 'dark' : 'light');
-            localStorage.setItem('theme', themeSwitch.checked ? 'dark' : 'light');
-        });
-
-        // Load saved theme
-        document.body.setAttribute('data-theme', localStorage.getItem('theme') || 'light');
-        themeSwitch.checked = localStorage.getItem('theme') === 'dark';
-
-        // Update last modification tracker
-        function updateLastModification(employee) {
-            const now = new Date();
-            const formatted = now.toLocaleDateString('fr-FR') + ' ' + now.toLocaleTimeString('fr-FR');
-            document.getElementById('lastUpdate').textContent = 
-                `Dernière mise à jour: ${formatted} - ${employee.pseudo}`;
-        }
-
-        // Copy to Discord
-        function copyToDiscord() {
-            const sortedEmployees = [...employees].sort((a, b) => 
-                calculateRemainingDays(b) - calculateRemainingDays(a));
-            
-            // Calculate maximum lengths for each column
-            let maxPseudoLength = 6; // "Pseudo"
-            let maxDaysLength = 14; // "Jours Restants"
-            let maxDateLength = 11; // "Date de fin"
-            
-            sortedEmployees.forEach(emp => {
-                const days = calculateRemainingDays(emp);
-                const endDate = new Date();
-                endDate.setDate(endDate.getDate() + days);
+        document.addEventListener('DOMContentLoaded', async function() {
+            try {
+                // Show loading overlay
+                document.getElementById('loadingOverlay').style.display = 'flex';
                 
-                maxPseudoLength = Math.max(maxPseudoLength, emp.pseudo.length);
-                maxDaysLength = Math.max(maxDaysLength, days.toString().length);
-                maxDateLength = Math.max(maxDateLength, endDate.toLocaleDateString('fr-FR').length);
-            });
-            
-            // Create header and separator
-            const header = [
-                'Pseudo'.padEnd(maxPseudoLength),
-                'Jours Restants'.padEnd(maxDaysLength),
-                'Date de fin'.padEnd(maxDateLength)
-            ];
-            
-            const separator = [
-                '-'.repeat(maxPseudoLength),
-                '-'.repeat(maxDaysLength),
-                '-'.repeat(maxDateLength)
-            ];
-            
-            let markdown = "```md\n# Les Pneus Normaux - Employés\n\n";
-            markdown += `| ${header.join(' | ')} |\n`;
-            markdown += `| ${separator.join(' | ')} |\n`;
-            
-            sortedEmployees.forEach(emp => {
-                const days = calculateRemainingDays(emp);
-                const endDate = new Date();
-                endDate.setDate(endDate.getDate() + days);
+                // Load employees data
+                employees = await Storage.loadEmployees();
                 
-                const row = [
-                    emp.pseudo.padEnd(maxPseudoLength),
-                    days.toString().padEnd(maxDaysLength),
-                    endDate.toLocaleDateString('fr-FR').padEnd(maxDateLength)
-                ];
-                
-                markdown += `| ${row.join(' | ')} |\n`;
-            });
-            
-            markdown += "```";
-            
-            navigator.clipboard.writeText(markdown)
-                .then(() => showNotification('Tableau copié pour Discord'));
-        }
-
-        function editMission(employee, index) {
-            const mission = employee.missions[index];
-            document.getElementById('editMissionIndex').value = index;
-            document.getElementById('editMissionEmployee').value = employee.pseudo;
-            document.getElementById('editMissionDate').value = mission.date;
-            document.getElementById('editMissionKm').value = mission.kilometers;
-            $('#editMissionModal').modal('show');
-        }
-
-        document.getElementById('editMissionForm').addEventListener('submit', function(event) {
-            event.preventDefault();
-            const index = document.getElementById('editMissionIndex').value;
-            const pseudo = document.getElementById('editMissionEmployee').value;
-            const employee = employees.find(emp => emp.pseudo === pseudo);
-            
-            if (employee) {
-                employee.missions[index] = {
-                    date: document.getElementById('editMissionDate').value,
-                    kilometers: parseInt(document.getElementById('editMissionKm').value)
-                };
-                updateMissionsTable(employee);
+                // Update UI
                 updateEmployeeTable();
-                updateStorage();
-                updateLastModification(employee);
-                $('#editMissionModal').modal('hide');
-                showNotification('Mission modifiée avec succès');
+                
+                // Hide loading overlay
+                document.getElementById('loadingOverlay').style.display = 'none';
+            } catch (error) {
+                console.error('Error loading data:', error);
+                showNotification('Erreur lors du chargement des données', 'error');
+                document.getElementById('loadingOverlay').style.display = 'none';
             }
         });
 
-        // Check admin state on load
-        document.addEventListener('DOMContentLoaded', function() {
-            isAdmin = localStorage.getItem('isAdmin') === 'true';
-            updateUIState();
-        });
-
-        // Update UI based on admin state
-        function updateUIState() {
-            const adminElements = document.querySelectorAll('.admin-only');
-            adminElements.forEach(el => {
-                el.style.display = isAdmin ? 'inline-block' : 'none';
-            });
-            
-            // Mettre à jour l'attribut data-admin sur le body
-            document.body.setAttribute('data-admin', isAdmin.toString());
+        // Update notification function to handle error state
+        function showNotification(message, type = 'success') {
+            const notification = document.getElementById('notification');
+            notification.style.display = 'block';
+            notification.style.backgroundColor = type === 'error' ? '#ff4444' : '#4CAF50';
+            document.getElementById('notificationMessage').textContent = message;
+            setTimeout(hideNotification, 3000);
         }
 
-        // Add admin-only class to interactive elements
-        document.querySelectorAll('button:not(.theme-switch)').forEach(btn => {
-            btn.classList.add('admin-only');
-        });
-
-        // Add hidden admin login trigger
-        document.addEventListener('keydown', function(e) {
-            // Ctrl + Shift + A
-            if (e.ctrlKey && e.shiftKey && e.key === 'A') {
-                checkAdminPassword();
-            }
-        });
-
-        // Logout function
-        function logout() {
-            isAdmin = false;
-            localStorage.removeItem('isAdmin');
-            document.body.setAttribute('data-admin', 'false');
-            showNotification('Déconnexion effectuée');
-            updateUIState();
-        }
-
-        // Add logout button for admin
-        const logoutBtn = document.createElement('button');
-        logoutBtn.textContent = 'Déconnexion';
-        logoutBtn.className = 'btn btn-secondary admin-only';
-        logoutBtn.onclick = logout;
-        document.querySelector('.d-flex.mb-3').appendChild(logoutBtn);
-
-        // Update existing functions to check admin state
-        function showEmployeeDetails(pseudo) {
-            if (!isAdmin) {
-                // Read-only version
-                const employee = employees.find(emp => emp.pseudo === pseudo);
-                if (employee) {
-                    alert(`Détails de ${employee.pseudo}\n` +
-                          `Jours restants: ${calculateRemainingDays(employee)}\n` +
-                          `Dernière mission: ${employee.lastMissionDate}`);
-                }
-                return;
-            }
-            const employee = employees.find(emp => emp.pseudo === pseudo);
-            if (employee) {
-                document.getElementById('detailsPseudo').value = employee.pseudo;
-                document.getElementById('detailsDaysRemaining').textContent = employee.daysRemaining;
-                document.getElementById('detailsLastMissionDate').textContent = employee.lastMissionDate ? new Date(employee.lastMissionDate).toLocaleDateString('fr-FR') : 'N/A';
-                document.getElementById('detailsProbation').checked = employee.probation;
-                if (employee.probation) {
-                    document.getElementById('kilometersRemainingContainer').style.display = 'block';
-                    document.getElementById('detailsKilometersRemaining').textContent = employee.kilometersRemaining;
-                } else {
-                    document.getElementById('kilometersRemainingContainer').style.display = 'none';
-                }
-                updateMissionsTable(employee);
-                document.getElementById('monthlyKilometers').textContent = `Kilomètres effectués ce mois-ci: ${calculateMonthlyKilometers(employee)}`;
-            }
-        }
-
-        // Au tout début du script
-        let isAdmin = false;
-
-        // Fonction de mise à jour de l'interface
-        function updateUIState() {
-            const adminElements = document.querySelectorAll('.admin-only');
-            const modals = document.querySelectorAll('.modal');
-            
-            adminElements.forEach(el => {
-                el.style.display = isAdmin ? '' : 'none';
-            });
-            
-            modals.forEach(modal => {
-                if (!isAdmin) {
-                    $(modal).modal('hide');
-                }
-            });
-        }
-
-        // Modification de l'événement DOMContentLoaded
-        document.addEventListener('DOMContentLoaded', function() {
-            // Forcer l'état non-admin et nettoyer le storage
-            isAdmin = false;
-            sessionStorage.clear();
-            localStorage.clear();
-            
-            // Ajouter la classe admin-only aux modales qui doivent être restreintes
-            document.getElementById('addMissionModal').classList.add('admin-only');
-            document.getElementById('employeeDetailsModal').classList.add('admin-only');
-            
-            updateUIState();
-        });
-
-        // Mise à jour des modales
-        function showAddEmployeeModal() {
-            if (!isAdmin) return;
-            $('#addEmployeeModal').modal('show');
-        }
-
-        function showEmployeeDetails(pseudo) {
-            if (!isAdmin) {
-                // Version lecture seule pour non-admin
-                const employee = employees.find(emp => emp.pseudo === pseudo);
-                if (employee) {
-                    alert(`Détails de ${employee.pseudo}\n` +
-                          `Jours restants: ${calculateRemainingDays(employee)}\n` +
-                          `Dernière mission: ${employee.lastMissionDate}`);
-                }
-                return;
-            }
-            // ... reste du code existant ...
+        function hideNotification() {
+            document.getElementById('notification').style.display = 'none';
         }
     </script>
-
-    <script>
-        document.addEventListener('keydown', function(e) {
-            // Ctrl + Shift + A
-            if (e.ctrlKey && e.shiftKey && e.key === 'A') {
-                checkAdminPassword();
-            }
-        });
-    </script>
-
-    <script>
-        function toggleDarkMode() {
-            const body = document.body;
-            const isDark = body.getAttribute('data-theme') === 'dark';
-            body.setAttribute('data-theme', isDark ? 'light' : 'dark');
-            localStorage.setItem('theme', isDark ? 'light' : 'dark');
-        }
-
-        document.addEventListener('DOMContentLoaded', function() {
-            const savedTheme = localStorage.getItem('theme') || 'light';
-            document.body.setAttribute('data-theme', savedTheme);
-        });
-    </script>
-
-    <script>
-        // 1. Update keyboard shortcut
-        document.addEventListener('keydown', function(e) {
-            if (e.ctrlKey && e.altKey && e.key === 'a') {
-                e.preventDefault(); // Prevent default browser behavior
-                openLoginModal();
-            }
-        });
-
-        // 2. Dark mode implementation
-        const darkModeToggle = () => {
-            const body = document.body;
-            const isDark = body.getAttribute('data-theme') === 'dark';
-            body.setAttribute('data-theme', isDark ? 'light' : 'dark');
-            localStorage.setItem('theme', isDark ? 'light' : 'dark');
-        }
-
-        // 3. Single updateStorage implementation
-        const updateStorage = () => {
-            const employees = getEmployees();
-            Storage.saveEmployees(employees);
-            updateEmployeesList();
-        }
-
-        // Login modal function
-        const openLoginModal = () => {
-            if (!isAdmin) {
-                $('#loginModal').modal('show');
-            }
-        }
-
-        // Initialize dark mode on page load
-        document.addEventListener('DOMContentLoaded', () => {
-            const savedTheme = localStorage.getItem('theme') || 'light';
-            document.body.setAttribute('data-theme', savedTheme);
-        });
-    </script>
-
-    <script>
-
-        document.getElementById('loginForm').addEventListener('submit', async function(e) {
-            e.preventDefault();
-            const password = document.getElementById('adminPassword').value;
-            
-            const hashedPassword = await hashPassword(password);
-            if (hashedPassword === ADMIN_HASH) {
-                isAdmin = true;
-                sessionStorage.setItem('isAdmin', 'true');
-                document.body.setAttribute('data-admin', 'true');
-                updateUIState();
-                $('#loginModal').modal('hide');
-                document.getElementById('adminPassword').value = '';
-                showNotification('Mode administrateur activé');
-            } else {
-                showNotification('Mot de passe incorrect', 'error');
-            }
-        });
-
-        // Remove duplicate mobile login button
-        document.addEventListener('DOMContentLoaded', function() {
-            const mobileLoginButtons = document.querySelectorAll('.mobile-login');
-            if (mobileLoginButtons.length > 1) {
-                mobileLoginButtons[1].remove();
-            }
-            
-            // Keep only one instance with proper class
-            const mobileLogin = document.querySelector('.mobile-login');
-            if (mobileLogin) {
-                mobileLogin.classList.add('unique');
-            }
-        });
-    </script>
-
-    <!-- Update modal trigger buttons -->
-    <button class="btn btn-primary" onclick="openLoginModal()">
-        <i class="fas fa-key"></i>
-    </button>
 </body>
 </html>
