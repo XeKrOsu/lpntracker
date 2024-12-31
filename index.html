@@ -567,6 +567,32 @@
             }
         }
 
+        window.deleteEmployee = async function(pseudo) {
+            if (!isAdmin) return;
+            
+            if (confirm(`Êtes-vous sûr de vouloir supprimer l'employé ${pseudo} ?`)) {
+                const employeeIndex = employees.findIndex(emp => emp.pseudo === pseudo);
+                if (employeeIndex === -1) return;
+
+                employees.splice(employeeIndex, 1);
+                
+                try {
+                    await Storage.saveEmployees(employees);
+                    $('#employeeDetailsModal').modal('hide');
+                    updateEmployeeTable();
+                    showNotification(`Employé ${pseudo} supprimé avec succès`);
+                } catch (error) {
+                    console.error('Erreur lors de la suppression:', error);
+                    showNotification('Erreur lors de la suppression', 'error');
+                }
+            }
+        };
+
+        document.getElementById('deleteEmployeeButton').onclick = function() {
+            const pseudo = document.getElementById('detailsPseudo').value;
+            window.deleteEmployee(pseudo);
+        };
+
         // Variables globales
         let employees = [];
         let isAdmin = false;
@@ -631,63 +657,12 @@
         }
 
         function formatDaysRemaining(employee) {
-            if (!employee || !employee.missions || employee.missions.length === 0) {
-                return 'Aucune mission';
-            }
-
-            // Trouver la dernière mission
-            const lastMission = [...employee.missions].sort((a, b) => 
-                new Date(b.date) - new Date(a.date)
-            )[0];
-
-            if (!lastMission) return 'Aucune mission';
-
-            const lastMissionDate = new Date(lastMission.date);
-            const today = new Date();
-            const diffTime = today - lastMissionDate;
-            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-            
-            if (diffDays > 30) {
-                return `${diffDays - 30} jours de retard`;
+            const remainingDays = calculateRemainingDays(employee);
+            if (remainingDays < 0) {
+                return `${Math.abs(remainingDays)} jours de retard`;
             } else {
-                return `${30 - diffDays} jours restants`;
+                return `${remainingDays} jours restants`;
             }
-        }
-
-        function calculateRemainingDays(employee) {
-            const today = new Date();
-            const startDate = new Date(employee.startDate);
-
-            if (employee.probation) {
-                const totalKilometers = employee.missions.reduce((sum, mission) => sum + mission.kilometers, 0);
-                const daysElapsed = Math.ceil((today - startDate) / (1000 * 60 * 60 * 24));
-                
-                if (totalKilometers >= 2500) {
-                    employee.probation = false;
-                    return 180;
-                } else {
-                    return Math.max(0, 30 - daysElapsed);
-                }
-            }
-
-            if (employee.missions.length === 0) {
-                const daysElapsed = Math.ceil((today - startDate) / (1000 * 60 * 60 * 24));
-                return Math.max(0, 180 - daysElapsed);
-            }
-
-            const lastMission = employee.missions.reduce((latest, mission) => {
-                const missionDate = new Date(mission.date);
-                return !latest || missionDate > new Date(latest.date) ? mission : latest;
-            }, null);
-
-            if (lastMission) {
-                const lastMissionDate = new Date(lastMission.date);
-                const daysElapsed = Math.ceil((today - lastMissionDate) / (1000 * 60 * 60 * 24));
-                const remainingDays = 30 - daysElapsed;
-                return Math.max(0, remainingDays);
-            }
-
-            return 0;
         }
 
         // Gestionnaires d'événements
@@ -837,7 +812,6 @@
                 lastMissionDate: 'N/A',
                 missions: [],
                 probation: probation,
-                kilometersRemaining: probation ? 2500 : 0
             };
 
             employees.push(newEmployee);
@@ -921,7 +895,7 @@
                 const status = days < 0 ? '🔴' : days <= 30 ? '🟡' : '🟢';
                 const probationStatus = employee.probation ? ' (Période d\'essai)' : '';
                 
-                discordText += `${status} **${employee.pseudo}**${probationStatus}: ${formatDaysRemaining(days)}\n`;
+                discordText += `${status} **${employee.pseudo}**${probationStatus}: ${formatDaysRemaining(employee)}\n`;
             });
 
             navigator.clipboard.writeText(discordText)
