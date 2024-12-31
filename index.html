@@ -11,191 +11,99 @@
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
     <style>
         :root {
-            --bg-color: #1a1a1a;
-            --text-color: #fff;
-            --table-border: #444;
-            --table-header: #2d2d2d;
+            --background-color: #1a1a1a;
+            --text-color: #ffffff;
             --modal-bg: #2d2d2d;
-            --input-bg: #333;
-            --input-text: #fff;
+            --table-border: #404040;
+            --input-bg: #333333;
+            --input-text: #ffffff;
         }
-
-        * {
-            transition: background-color 0.3s ease, color 0.3s ease;
-        }
-
+    
         body {
-            background-color: var(--bg-color);
-            color: var(--text-color);
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-        }
-
-        h1, h2 {
+            background-color: var(--background-color);
             color: var(--text-color);
         }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-bottom: 20px;
+    
+        .modal-content {
+            background-color: var(--modal-bg);
             color: var(--text-color);
         }
-
-        table, th, td {
-            border: 1px solid var(--table-border);
+    
+        .table {
+            color: var(--text-color);
         }
-
-        th, td {
-            padding: 12px;
-            text-align: left;
-        }
-
-        th {
-            background-color: var(--table-header);
-        }
-
+    
         .table td, .table th {
             color: var(--text-color);
             border-color: var(--table-border);
         }
-
-        .form-container {
-            background-color: var(--modal-bg);
-            padding: 20px;
-            border: 1px solid var(--table-border);
-            border-radius: 5px;
-            margin-bottom: 20px;
-        }
-
+    
         .form-control {
             background-color: var(--input-bg);
             color: var(--input-text);
             border-color: var(--table-border);
         }
-
+    
         .form-control:focus {
             background-color: var(--input-bg);
             color: var(--input-text);
         }
-
-        input[type="text"], 
-        input[type="number"], 
-        input[type="password"],
-        input[type="date"],
-        select {
-            width: 100%;
-            padding: 10px;
-            margin: 5px 0 10px 0;
-            border: 1px solid var(--table-border);
-            border-radius: 5px;
-            background-color: var(--input-bg);
-            color: var(--input-text);
-        }
-
-        button {
-            background-color: #4CAF50;
-            color: white;
-            padding: 10px 20px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-
-        button:hover {
-            background-color: #45a049;
-        }
-
-        .container {
-            padding: 20px;
-            border: 1px solid var(--table-border);
-            border-radius: 5px;
-            margin: 20px;
-            background-color: var(--modal-bg);
-        }
-
-        .notification {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            background-color: #4CAF50;
-            color: white;
-            padding: 15px;
-            border-radius: 5px;
-            z-index: 1000;
-        }
-
-        .loading-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.8);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 9999;
-        }
-
-        .spinner {
-            width: 50px;
-            height: 50px;
-            border: 5px solid #333;
-            border-top: 5px solid #3498db;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-        }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
-        .login-button {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            z-index: 1000;
-        }
-
-        .login-button button {
-            width: 50px;
-            height: 50px;
-            border-radius: 50%;
-            padding: 0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-        }
-
-        .modal-content {
-            background-color: var(--modal-bg);
-            color: var(--text-color);
-        }
-
-        .modal-header, .modal-footer {
-            border-color: var(--table-border);
-        }
-
-        .close {
-            color: var(--text-color);
-        }
-
-        .admin-only {
-            display: none;
-        }
-
+    
         label {
             color: var(--text-color);
         }
-
-        [data-theme="dark"] td, 
-        [data-theme="dark"] #detailsDaysRemaining,
-        [data-theme="dark"] .table {
-            color: var(--text-color) !important;
+    
+        .modal-header {
+            border-bottom-color: var(--table-border);
+        }
+    
+        .modal-footer {
+            border-top-color: var(--table-border);
+        }
+    
+        .close {
+            color: var(--text-color);
+        }
+    
+        .close:hover {
+            color: #cccccc;
+        }
+    
+        .text-danger {
+            color: #ff4444 !important;
+        }
+    
+        .text-success {
+            color: #00C851 !important;
+        }
+    
+        .btn-info {
+            background-color: #0099CC;
+        }
+    
+        .btn-warning {
+            background-color: #FF8800;
+        }
+    
+        .btn-danger {
+            background-color: #CC0000;
+        }
+    
+        /* Style pour les switchs et checkboxes */
+        .custom-control-input:checked ~ .custom-control-label::before {
+            background-color: #00C851;
+            border-color: #00C851;
+        }
+    
+        /* Style pour le header et footer du tableau */
+        .table thead th {
+            background-color: var(--modal-bg);
+            border-color: var(--table-border);
+        }
+    
+        /* Style pour les lignes du tableau au survol */
+        .table tbody tr:hover {
+            background-color: rgba(255, 255, 255, 0.1);
         }
     </style>
 </head>
@@ -516,30 +424,36 @@
         class Storage {
             static async saveEmployees(employees) {
                 try {
-                    await set(ref(db, 'employees'), employees);
+                    const lastModified = updateLastModifiedDate();
+                    const data = {
+                        employees: employees,
+                        lastModified: lastModified
+                    };
+                    
+                    // Enregistrement dans Firebase
+                    await set(ref(database, 'employees'), data);
+                    return true;
                 } catch (error) {
                     console.error('Erreur lors de la sauvegarde:', error);
-                    showNotification('Erreur lors de la sauvegarde', 'error');
+                    throw error;
                 }
             }
 
             static async loadEmployees() {
                 try {
-                    const snapshot = await get(child(ref(db), 'employees'));
-                    const employees = snapshot.val() || [];
-                    employees.forEach(emp => {
-                        emp.startDate = new Date(emp.startDate);
-                        emp.lastMissionDate = emp.lastMissionDate === 'N/A' ? 'N/A' : new Date(emp.lastMissionDate);
-                        emp.missions = emp.missions || [];
-                        emp.missions.forEach(mission => {
-                            mission.date = new Date(mission.date);
-                        });
-                    });
-                    return employees;
+                    const snapshot = await get(ref(database, 'employees'));
+                    const data = snapshot.val();
+                    if (data && data.employees) {
+                        employees = data.employees;
+                        if (data.lastModified) {
+                            document.getElementById('lastModified').textContent = data.lastModified;
+                        }
+                    }
+                    updateEmployeeTable();
+                    return true;
                 } catch (error) {
                     console.error('Erreur lors du chargement:', error);
-                    showNotification('Erreur lors du chargement des données', 'error');
-                    return [];
+                    throw error;
                 }
             }
         }
@@ -568,14 +482,14 @@
             });
         }
 
-        function formatDaysRemaining(date) {
-            if (!date || date === 'N/A') return 'Aucune mission';
+        function formatDaysRemaining(lastMissionDate) {
+            if (!lastMissionDate || lastMissionDate === 'N/A') return 'Aucune mission';
             
-            const lastMissionDate = new Date(date);
-            if (isNaN(lastMissionDate.getTime())) return 'Date invalide';
+            const lastMission = new Date(lastMissionDate);
+            if (isNaN(lastMission.getTime())) return 'Date invalide';
             
             const today = new Date();
-            const diffTime = today - lastMissionDate;
+            const diffTime = Math.abs(today - lastMission);
             const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
             
             if (diffDays > 30) {
@@ -639,22 +553,18 @@
         // Gestionnaires d'événements
         document.addEventListener('DOMContentLoaded', async function() {
             try {
-                document.getElementById('loadingOverlay').style.display = 'flex';
-                employees = await Storage.loadEmployees();
+                await Storage.loadEmployees();
                 
-                // Restaurer l'état admin si présent dans la session
-                isAdmin = sessionStorage.getItem('isAdmin') === 'true';
-                document.body.setAttribute('data-admin', isAdmin);
-                
-                // Mise à jour initiale
-                updateEmployeeTable();
-                updateUIState();
-                
-                document.getElementById('loadingOverlay').style.display = 'none';
+                // Vérifier si l'utilisateur était connecté
+                const savedAdminState = sessionStorage.getItem('isAdmin');
+                if (savedAdminState === 'true') {
+                    isAdmin = true;
+                    document.body.setAttribute('data-admin', 'true');
+                    updateUIState();
+                }
             } catch (error) {
-                console.error('Error loading data:', error);
+                console.error('Erreur lors de l\'initialisation:', error);
                 showNotification('Erreur lors du chargement des données', 'error');
-                document.getElementById('loadingOverlay').style.display = 'none';
             }
         });
 
@@ -674,6 +584,27 @@
                 date: date,
                 kilometers: kilometers
             };
+
+        document.getElementById('deleteEmployeeButton').addEventListener('click', async function() {
+            if (!isAdmin) return;
+
+            const pseudo = document.getElementById('detailsPseudo').value;
+            if (confirm(`Êtes-vous sûr de vouloir supprimer l'employé ${pseudo} ?`)) {
+                try {
+                    const index = employees.findIndex(emp => emp.pseudo === pseudo);
+                    if (index === -1) throw new Error('Employé non trouvé');
+
+                    employees.splice(index, 1);
+                    await Storage.saveEmployees(employees);
+                    $('#employeeDetailsModal').modal('hide');
+                    updateEmployeeTable();
+                    showNotification(`Employé ${pseudo} supprimé avec succès`);
+                } catch (error) {
+                    console.error('Erreur lors de la suppression:', error);
+                    showNotification('Erreur lors de la suppression', 'error');
+                }
+            }
+        });
 
             // Mettre à jour la dernière mission si nécessaire
             const lastMission = employee.missions[employee.missions.length - 1];
@@ -911,17 +842,32 @@
             const employee = employees.find(emp => emp.pseudo === pseudo);
             if (!employee) return;
 
-            // Masquer les éléments admin
+            // Remplir les informations de base (toujours visibles)
+            document.getElementById('detailsPseudo').value = employee.pseudo;
+            document.getElementById('detailsDaysRemaining').textContent = formatDaysRemaining(employee.lastMissionDate);
+            
+            // Formater la date de dernière mission sans l'heure
+            const formattedLastMissionDate = employee.lastMissionDate ? 
+                new Date(employee.lastMissionDate).toLocaleDateString('fr-FR') : 'N/A';
+            document.getElementById('detailsLastMissionDate').textContent = formattedLastMissionDate;
+            
+            // Gérer la période d'essai
+            if (employee.probation) {
+                document.getElementById('detailsProbation').checked = true;
+                const totalKilometers = employee.missions.reduce((sum, mission) => sum + mission.kilometers, 0);
+                document.getElementById('detailsKilometersRemaining').textContent = 
+                    `${Math.max(0, 2500 - totalKilometers)} km restants pour sortir de la période d'essai`;
+                document.getElementById('kilometersRemainingContainer').style.display = 'block';
+            } else {
+                document.getElementById('detailsProbation').checked = false;
+                document.getElementById('kilometersRemainingContainer').style.display = 'none';
+            }
+
+            // Masquer/Afficher les éléments admin
             const adminElements = document.querySelectorAll('.admin-only');
             adminElements.forEach(el => {
                 el.style.display = isAdmin ? 'block' : 'none';
             });
-
-            // Remplir les informations de base (toujours visibles)
-            document.getElementById('detailsPseudo').value = employee.pseudo;
-            document.getElementById('detailsDaysRemaining').textContent = formatDaysRemaining(employee.lastMissionDate);
-            document.getElementById('detailsLastMissionDate').textContent = employee.lastMissionDate;
-            document.getElementById('detailsProbation').checked = employee.probation;
 
             // Masquer le formulaire d'ajout de mission pour les non-admins
             const addMissionSection = document.querySelector('#addMissionFormDetails').closest('div');
@@ -937,8 +883,9 @@
 
             sortedMissions.forEach((mission, index) => {
                 const row = document.createElement('tr');
+                const missionDate = new Date(mission.date).toLocaleDateString('fr-FR');
                 row.innerHTML = `
-                    <td>${new Date(mission.date).toLocaleDateString('fr-FR')}</td>
+                    <td>${missionDate}</td>
                     <td>${mission.kilometers} km</td>
                     ${isAdmin ? `
                         <td>
@@ -1009,6 +956,46 @@
                 updateEmployeeTable();
                 showNotification('Mission supprimée avec succès');
             }
+        }
+
+        function updateLastModifiedDate() {
+            const now = new Date();
+            const formattedDate = now.toLocaleDateString('fr-FR') + ' à ' + 
+                                now.toLocaleTimeString('fr-FR', {hour: '2-digit', minute:'2-digit'});
+            document.getElementById('lastModified').textContent = formattedDate;
+            return formattedDate;
+        }
+
+        function updateEmployeeTable() {
+            const tableBody = document.getElementById('employeesTableBody');
+            tableBody.innerHTML = '';
+
+            employees.forEach(employee => {
+                const row = document.createElement('tr');
+                const daysRemaining = formatDaysRemaining(employee.lastMissionDate);
+                
+                // Déterminer la classe CSS pour la couleur du texte
+                let textColorClass = '';
+                if (daysRemaining.includes('retard')) {
+                    textColorClass = 'text-danger';
+                } else if (!daysRemaining.includes('Aucune')) {
+                    textColorClass = 'text-success';
+                }
+
+                row.innerHTML = `
+                    <td>${employee.pseudo}</td>
+                    <td class="${textColorClass}">${daysRemaining}</td>
+                    <td>
+                        <button class="btn btn-info btn-sm" onclick="showEmployeeDetails('${employee.pseudo}')">
+                            Détails
+                        </button>
+                    </td>
+                `;
+                tableBody.appendChild(row);
+            });
+
+            // Mettre à jour le compteur d'employés
+            document.getElementById('employeeCount').textContent = employees.length;
         }
     </script>
 </body>
