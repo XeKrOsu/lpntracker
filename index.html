@@ -350,7 +350,6 @@
                             <span id="detailsKilometersRemaining"></span>
                         </div>
                         <div class="d-flex justify-content-between mt-3">
-                            <button type="submit" class="btn btn-primary">Mettre à Jour</button>
                             <button type="button" id="deleteEmployeeButton" class="btn btn-danger">Supprimer Employé</button>
                         </div>
                     </form>
@@ -529,10 +528,11 @@
                     const employees = snapshot.val() || [];
                     employees.forEach(emp => {
                         emp.startDate = new Date(emp.startDate);
-                        emp.lastMissionDate = emp.lastMissionDate === 'N/A' ? 'N/A' : new Date(emp.lastMissionDate);
+                        emp.lastMissionDate = emp.lastMissionDate === 'N/A' ? 'N/A' : new Date(emp.lastMissionDate).toISOString().split('T')[0];
                         emp.missions = emp.missions || [];
                         emp.missions.forEach(mission => {
-                            mission.date = new Date(mission.date);
+                            const missionDate = new Date(mission.date);
+                            mission.date = missionDate.toISOString().split('T')[0];
                         });
                     });
                     return employees;
@@ -542,7 +542,6 @@
                     return [];
                 }
             }
-        }
 
         // Fonctions utilitaires
         async function hashPassword(password) {
@@ -602,40 +601,36 @@
 
             if (employee.probation) {
                 const totalKilometers = employee.missions.reduce((sum, mission) => sum + mission.kilometers, 0);
-                const daysElapsed = Math.floor((today - startDate) / (1000 * 60 * 60 * 24));
-
+                const daysElapsed = Math.ceil((today - startDate) / (1000 * 60 * 60 * 24));
+                
                 if (totalKilometers >= 2500) {
                     employee.probation = false;
                     return 180;
                 } else {
-                    return 30 - daysElapsed;
+                    return Math.max(0, 30 - daysElapsed);
                 }
             }
 
             if (employee.missions.length === 0) {
-                const daysElapsed = Math.floor((today - startDate) / (1000 * 60 * 60 * 24));
-                return 180 - daysElapsed;
+                const daysElapsed = Math.ceil((today - startDate) / (1000 * 60 * 60 * 24));
+                return Math.max(0, 180 - daysElapsed);
             }
 
-            const sortedMissions = [...employee.missions].sort((a, b) => new Date(a.date) - new Date(b.date));
-            let firstMissionDate = new Date(sortedMissions[0].date);
-            let remainingDays = 180;
-
-            for (let i = 0; i < sortedMissions.length; i++) {
-                const mission = sortedMissions[i];
+            const lastMission = employee.missions.reduce((latest, mission) => {
                 const missionDate = new Date(mission.date);
-                const daysElapsed = Math.floor((missionDate - firstMissionDate) / (1000 * 60 * 60 * 24));
-                remainingDays -= daysElapsed;
-                remainingDays += calculateDaysGained(mission.kilometers);
-                remainingDays = Math.min(360, remainingDays);
-                firstMissionDate = missionDate;
+                return !latest || missionDate > new Date(latest.date) ? mission : latest;
+            }, null);
+
+            if (lastMission) {
+                const lastMissionDate = new Date(lastMission.date);
+                const daysElapsed = Math.ceil((today - lastMissionDate) / (1000 * 60 * 60 * 24));
+                const remainingDays = 30 - daysElapsed;
+                return Math.max(0, remainingDays);
             }
 
-            const daysElapsedSinceLastMission = Math.floor((today - firstMissionDate) / (1000 * 60 * 60 * 24));
-            remainingDays -= daysElapsedSinceLastMission;
-
-            return remainingDays;
+            return 0;
         }
+
         // Gestionnaires d'événements
         document.addEventListener('DOMContentLoaded', async function() {
             try {
@@ -917,15 +912,25 @@
                 el.style.display = isAdmin ? 'block' : 'none';
             });
 
+            // Masquer les contrôles d'édition pour les non-admins
+            const editControls = document.querySelectorAll('.edit-controls');
+            editControls.forEach(el => el.style.display = 'none');
+
             // Remplir les informations de base (toujours visibles)
             document.getElementById('detailsPseudo').value = employee.pseudo;
-            document.getElementById('detailsDaysRemaining').textContent = formatDaysRemaining(employee.lastMissionDate);
+            document.getElementById('detailsDaysRemaining').textContent = formatDaysRemaining(employee.daysRemaining);
             document.getElementById('detailsLastMissionDate').textContent = employee.lastMissionDate;
             document.getElementById('detailsProbation').checked = employee.probation;
+            document.getElementById('detailsProbation').disabled = !isAdmin;
 
-            // Masquer le formulaire d'ajout de mission pour les non-admins
-            const addMissionSection = document.querySelector('#addMissionFormDetails').closest('div');
-            addMissionSection.style.display = isAdmin ? 'block' : 'none';
+            // Masquer le formulaire d'ajout de mission et les contrôles de mise à jour pour les non-admins
+            const addMissionForm = document.querySelector('#addMissionFormDetails');
+            const updateControls = document.querySelector('#employeeDetailsForm button[type="submit"]');
+            const deleteButton = document.querySelector('#deleteEmployeeButton');
+            
+            if (addMissionForm) addMissionForm.style.display = isAdmin ? 'block' : 'none';
+            if (updateControls) updateControls.style.display = 'none'; // On cache toujours le bouton de mise à jour
+            if (deleteButton) deleteButton.style.display = isAdmin ? 'block' : 'none';
 
             // Afficher les missions (triées par date)
             const sortedMissions = [...employee.missions].sort((a, b) => 
@@ -941,7 +946,7 @@
                     <td>${new Date(mission.date).toLocaleDateString('fr-FR')}</td>
                     <td>${mission.kilometers} km</td>
                     ${isAdmin ? `
-                        <td>
+                        <td class="edit-controls">
                             <button class="btn btn-sm btn-warning mr-2" onclick="editMission('${employee.pseudo}', ${index})">
                                 Modifier
                             </button>
@@ -984,7 +989,8 @@
             const mission = employee.missions[index];
             document.getElementById('editMissionIndex').value = index;
             document.getElementById('editMissionEmployee').value = pseudo;
-            document.getElementById('editMissionDate').value = mission.date.split('T')[0];
+            const missionDate = new Date(mission.date);
+            document.getElementById('editMissionDate').value = missionDate.toISOString().split('T')[0];
             document.getElementById('editMissionKm').value = mission.kilometers;
 
             $('#employeeDetailsModal').modal('hide');
