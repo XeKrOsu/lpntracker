@@ -568,12 +568,19 @@
             });
         }
 
-        function formatDaysRemaining(date) {
-            if (!date || date === 'N/A') return 'Aucune mission';
-            
-            const lastMissionDate = new Date(date);
-            if (isNaN(lastMissionDate.getTime())) return 'Date invalide';
-            
+        function formatDaysRemaining(employee) {
+            if (!employee || !employee.missions || employee.missions.length === 0) {
+                return 'Aucune mission';
+            }
+
+            // Trouver la dernière mission
+            const lastMission = [...employee.missions].sort((a, b) => 
+                new Date(b.date) - new Date(a.date)
+            )[0];
+
+            if (!lastMission) return 'Aucune mission';
+
+            const lastMissionDate = new Date(lastMission.date);
             const today = new Date();
             const diffTime = today - lastMissionDate;
             const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
@@ -797,8 +804,6 @@
             employeeTable.innerHTML = '';
             
             employees.forEach(employee => {
-                employee.daysRemaining = calculateRemainingDays(employee);
-                
                 const row = document.createElement('tr');
                 
                 // Pseudo
@@ -807,18 +812,24 @@
                 
                 // Jours restants
                 const daysCell = document.createElement('td');
-                const formattedDays = formatDaysRemaining(employee.daysRemaining);
-                daysCell.textContent = formattedDays;
-                daysCell.style.color = employee.daysRemaining < 0 ? 'red' : 'inherit';
+                const daysStatus = formatDaysRemaining(employee);
+                daysCell.textContent = daysStatus;
+                daysCell.style.color = daysStatus.includes('retard') ? 'red' : 'inherit';
                 
-                // Dernière mission
+                // Dernière mission et date d'expiration
                 const lastMissionCell = document.createElement('td');
-                if (employee.lastMissionDate !== 'N/A') {
-                    const expiryDate = new Date();
-                    expiryDate.setDate(expiryDate.getDate() + employee.daysRemaining);
-                    lastMissionCell.textContent = `${new Date(employee.lastMissionDate).toLocaleDateString('fr-FR')} (expire le ${expiryDate.toLocaleDateString('fr-FR')})`;
+                if (employee.missions && employee.missions.length > 0) {
+                    const lastMission = [...employee.missions].sort((a, b) => 
+                        new Date(b.date) - new Date(a.date)
+                    )[0];
+                    
+                    const missionDate = new Date(lastMission.date);
+                    const expiryDate = new Date(missionDate);
+                    expiryDate.setDate(expiryDate.getDate() + 30); // Ajoute 30 jours à la date de la dernière mission
+                    
+                    lastMissionCell.textContent = `${missionDate.toLocaleDateString('fr-FR')} (expire le ${expiryDate.toLocaleDateString('fr-FR')})`;
                 } else {
-                    lastMissionCell.textContent = 'N/A';
+                    lastMissionCell.textContent = 'Aucune mission';
                 }
                 
                 // Actions
@@ -1017,6 +1028,41 @@
                 showNotification('Mission supprimée avec succès');
             }
         }
+
+        async function deleteEmployee(pseudo) {
+            if (!isAdmin) return;
+            
+            if (confirm(`Êtes-vous sûr de vouloir supprimer l'employé ${pseudo} ?`)) {
+                try {
+                    // Trouver l'index de l'employé
+                    const employeeIndex = employees.findIndex(emp => emp.pseudo === pseudo);
+                    if (employeeIndex === -1) {
+                        showNotification('Employé non trouvé', 'error');
+                        return;
+                    }
+
+                    // Supprimer l'employé du tableau
+                    employees.splice(employeeIndex, 1);
+
+                    // Sauvegarder les changements dans Firebase
+                    await Storage.saveEmployees(employees);
+
+                    // Fermer le modal et mettre à jour l'affichage
+                    $('#employeeDetailsModal').modal('hide');
+                    updateEmployeeTable();
+                    showNotification(`Employé ${pseudo} supprimé avec succès`);
+                } catch (error) {
+                    console.error('Erreur lors de la suppression:', error);
+                    showNotification('Erreur lors de la suppression', 'error');
+                }
+            }
+        }
+
+        // Modifier le gestionnaire d'événements pour le bouton de suppression
+        document.getElementById('deleteEmployeeButton').onclick = function() {
+            const pseudo = document.getElementById('detailsPseudo').value;
+            deleteEmployee(pseudo);
+        };
     </script>
 </body>
 </html>
