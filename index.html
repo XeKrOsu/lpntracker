@@ -593,6 +593,66 @@
             window.deleteEmployee(pseudo);
         };
 
+        window.showEmployeeDetails = function(pseudo) {
+            console.log("Ouverture des détails pour:", pseudo); // Pour le débogage
+            
+            const employee = employees.find(emp => emp.pseudo === pseudo);
+            if (!employee) {
+                console.error("Employé non trouvé:", pseudo);
+                return;
+            }
+
+            // Masquer les éléments admin
+            const adminElements = document.querySelectorAll('.admin-only');
+            adminElements.forEach(el => {
+                el.style.display = isAdmin ? 'block' : 'none';
+            });
+
+            // Remplir les informations de base
+            document.getElementById('detailsPseudo').value = employee.pseudo;
+            document.getElementById('detailsDaysRemaining').textContent = formatDaysRemaining(employee);
+            document.getElementById('detailsLastMissionDate').textContent = employee.lastMissionDate;
+            document.getElementById('detailsProbation').checked = employee.probation;
+            document.getElementById('detailsProbation').disabled = !isAdmin;
+
+            // Masquer/Afficher les éléments en fonction du statut admin
+            const addMissionForm = document.querySelector('#addMissionFormDetails');
+            const deleteButton = document.querySelector('#deleteEmployeeButton');
+            
+            if (addMissionForm) addMissionForm.style.display = isAdmin ? 'block' : 'none';
+            if (deleteButton) deleteButton.style.display = isAdmin ? 'block' : 'none';
+
+            // Afficher les missions
+            const sortedMissions = [...employee.missions].sort((a, b) => 
+                new Date(a.date) - new Date(b.date)
+            );
+
+            const missionsTableBody = document.getElementById('missionsTableBody');
+            missionsTableBody.innerHTML = '';
+
+            sortedMissions.forEach((mission, index) => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${new Date(mission.date).toLocaleDateString('fr-FR')}</td>
+                    <td>${mission.kilometers} km</td>
+                    ${isAdmin ? `
+                        <td class="edit-controls">
+                            <button class="btn btn-sm btn-warning mr-2" onclick="window.editMission('${employee.pseudo}', ${index})">
+                                Modifier
+                            </button>
+                            <button class="btn btn-sm btn-danger" onclick="window.deleteMission('${employee.pseudo}', ${index})">
+                                Supprimer
+                            </button>
+                        </td>
+                    ` : '<td></td>'}
+                `;
+                missionsTableBody.appendChild(row);
+            });
+
+            // Afficher le modal
+            $('#employeeDetailsModal').modal('show');
+        };
+
         // Variables globales
         let employees = [];
         let isAdmin = false;
@@ -862,7 +922,10 @@
                 const detailsButton = document.createElement('button');
                 detailsButton.textContent = 'Détails';
                 detailsButton.className = 'btn btn-info';
-                detailsButton.onclick = () => showEmployeeDetails(employee.pseudo);
+                // Utilisation explicite de window.showEmployeeDetails
+                detailsButton.addEventListener('click', function() {
+                    window.showEmployeeDetails(employee.pseudo);
+                });
                 
                 actionsCell.appendChild(detailsButton);
                 
@@ -936,63 +999,6 @@
 
             updateEmployeeTable();
         }
-
-        function showEmployeeDetails(pseudo) {
-            const employee = employees.find(emp => emp.pseudo === pseudo);
-            if (!employee) return;
-
-            // Masquer les éléments admin
-            const adminElements = document.querySelectorAll('.admin-only');
-            adminElements.forEach(el => {
-                el.style.display = isAdmin ? 'block' : 'none';
-            });
-
-            // Masquer les contrôles d'édition pour les non-admins
-            const editControls = document.querySelectorAll('.edit-controls');
-            editControls.forEach(el => el.style.display = 'none');
-
-            // Remplir les informations de base (toujours visibles)
-            document.getElementById('detailsPseudo').value = employee.pseudo;
-            document.getElementById('detailsDaysRemaining').textContent = formatDaysRemaining(employee);
-            document.getElementById('detailsLastMissionDate').textContent = employee.lastMissionDate;
-            document.getElementById('detailsProbation').checked = employee.probation;
-            document.getElementById('detailsProbation').disabled = !isAdmin;
-
-            // Masquer le formulaire d'ajout de mission et les contrôles de mise à jour pour les non-admins
-            const addMissionForm = document.querySelector('#addMissionFormDetails');
-            const updateControls = document.querySelector('#employeeDetailsForm button[type="submit"]');
-            const deleteButton = document.querySelector('#deleteEmployeeButton');
-            
-            if (addMissionForm) addMissionForm.style.display = isAdmin ? 'block' : 'none';
-            if (updateControls) updateControls.style.display = 'none'; // On cache toujours le bouton de mise à jour
-            if (deleteButton) deleteButton.style.display = isAdmin ? 'block' : 'none';
-
-            // Afficher les missions (triées par date)
-            const sortedMissions = [...employee.missions].sort((a, b) => 
-                new Date(a.date) - new Date(b.date)
-            );
-
-            const missionsTableBody = document.getElementById('missionsTableBody');
-            missionsTableBody.innerHTML = '';
-
-            sortedMissions.forEach((mission, index) => {
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td>${new Date(mission.date).toLocaleDateString('fr-FR')}</td>
-                    <td>${mission.kilometers} km</td>
-                    ${isAdmin ? `
-                        <td class="edit-controls">
-                            <button class="btn btn-sm btn-warning mr-2" onclick="editMission('${employee.pseudo}', ${index})">
-                                Modifier
-                            </button>
-                            <button class="btn btn-sm btn-danger" onclick="deleteMission('${employee.pseudo}', ${index})">
-                                Supprimer
-                            </button>
-                        </td>
-                    ` : '<td></td>'}
-                `;
-                missionsTableBody.appendChild(row);
-            });
 
         // Fonctions pour éditer et supprimer les missions
         function editMission(pseudo, index) {
