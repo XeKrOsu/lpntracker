@@ -380,10 +380,6 @@
                         </thead>
                         <tbody id="missionsTableBody"></tbody>
                     </table>
-
-                    <hr>
-                    <h5>Kilomètres Mensuels</h5>
-                    <p id="monthlyKilometers"></p>
                 </div>
             </div>
         </div>
@@ -433,6 +429,72 @@
             messagingSenderId: "1078879603552",
             appId: "1:1078879603552:web:0aeacc706e3dd8abaaec05"
         };
+
+        // Fonction pour calculer les jours à ajouter selon les kilomètres
+        function calculateDaysToAdd(km) {
+            if (km >= 500 && km < 2500) return 30;
+            if (km >= 2500 && km < 10000) return 30;
+            if (km >= 10000 && km < 25000) return 60;
+            if (km >= 25000 && km < 35000) return 90;
+            if (km >= 35000 && km < 50000) return 120;
+            if (km >= 50000 && km < 100000) return 150;
+            if (km >= 100000) return 180;
+            return 0;
+        }
+
+        // Fonction pour calculer les jours restants
+        function calculateRemainingDays(employee) {
+            const today = new Date();
+            const startDate = new Date(employee.startDate);
+
+            // Gestion de la période probatoire
+            if (employee.probation) {
+                const totalKm = employee.missions.reduce((sum, mission) => sum + mission.kilometers, 0);
+                const daysElapsed = Math.ceil((today - startDate) / (1000 * 60 * 60 * 24));
+                
+                if (totalKm >= 2500) {
+                    employee.probation = false;
+                    return 180;
+                } else {
+                    return Math.max(0, 30 - daysElapsed);
+                }
+            }
+
+            // Si pas de missions
+            if (!employee.missions || employee.missions.length === 0) {
+                return 180;
+            }
+
+            // Trouver la date de la première mission
+            const sortedMissions = [...employee.missions].sort((a, b) => 
+                new Date(a.date) - new Date(b.date)
+            );
+            
+            let startingDate = new Date(sortedMissions[0].date);
+            let remainingDays = 180;
+
+            // Parcourir toutes les missions dans l'ordre chronologique
+            sortedMissions.forEach(mission => {
+                const missionDate = new Date(mission.date);
+                const daysElapsed = Math.ceil((missionDate - startingDate) / (1000 * 60 * 60 * 24));
+                remainingDays -= daysElapsed;
+
+                // Ajouter les jours selon les kilomètres
+                const daysToAdd = calculateDaysToAdd(mission.kilometers);
+                remainingDays += daysToAdd;
+
+                // Limiter à 360 jours maximum
+                remainingDays = Math.min(360, remainingDays);
+                
+                startingDate = missionDate;
+            });
+
+            // Soustraire les jours écoulés depuis la dernière mission
+            const daysElapsedSinceLastMission = Math.ceil((today - startingDate) / (1000 * 60 * 60 * 24));
+            remainingDays -= daysElapsedSinceLastMission;
+
+            return remainingDays;
+        }
 
         // Initialize Firebase
         const app = initializeApp(firebaseConfig);
@@ -590,17 +652,6 @@
             } else {
                 return `${30 - diffDays} jours restants`;
             }
-        }
-
-        function calculateDaysGained(kilometers) {
-            if (kilometers >= 500 && kilometers < 2500) return 30;
-            if (kilometers >= 2500 && kilometers < 10000) return 30;
-            if (kilometers >= 10000 && kilometers < 25000) return 60;
-            if (kilometers >= 25000 && kilometers < 35000) return 90;
-            if (kilometers >= 35000 && kilometers < 50000) return 120;
-            if (kilometers >= 50000 && kilometers < 100000) return 150;
-            if (kilometers >= 100000) return 180;
-            return 0;
         }
 
         function calculateRemainingDays(employee) {
@@ -783,7 +834,6 @@
             const newEmployee = {
                 pseudo: pseudo,
                 startDate: startDate,
-                daysRemaining: probation ? 30 : 180,
                 lastMissionDate: 'N/A',
                 missions: [],
                 probation: probation,
@@ -816,7 +866,7 @@
                 daysCell.textContent = daysStatus;
                 daysCell.style.color = daysStatus.includes('retard') ? 'red' : 'inherit';
                 
-                // Dernière mission et date d'expiration
+                // Dernière mission
                 const lastMissionCell = document.createElement('td');
                 if (employee.missions && employee.missions.length > 0) {
                     const lastMission = [...employee.missions].sort((a, b) => 
@@ -824,8 +874,9 @@
                     )[0];
                     
                     const missionDate = new Date(lastMission.date);
+                    const remainingDays = calculateRemainingDays(employee);
                     const expiryDate = new Date(missionDate);
-                    expiryDate.setDate(expiryDate.getDate() + 30); // Ajoute 30 jours à la date de la dernière mission
+                    expiryDate.setDate(expiryDate.getDate() + remainingDays);
                     
                     lastMissionCell.textContent = `${missionDate.toLocaleDateString('fr-FR')} (expire le ${expiryDate.toLocaleDateString('fr-FR')})`;
                 } else {
@@ -841,7 +892,6 @@
                 
                 actionsCell.appendChild(detailsButton);
                 
-                // Assemblage
                 row.appendChild(pseudoCell);
                 row.appendChild(daysCell);
                 row.appendChild(lastMissionCell);
@@ -850,7 +900,6 @@
                 employeeTable.appendChild(row);
             });
 
-            // Mise à jour de la dernière mise à jour
             document.getElementById('lastUpdate').textContent = 
                 `Dernière mise à jour: ${new Date().toLocaleString('fr-FR')}`;
         }
@@ -930,7 +979,7 @@
 
             // Remplir les informations de base (toujours visibles)
             document.getElementById('detailsPseudo').value = employee.pseudo;
-            document.getElementById('detailsDaysRemaining').textContent = formatDaysRemaining(employee.daysRemaining);
+            document.getElementById('detailsDaysRemaining').textContent = formatDaysRemaining(employee);
             document.getElementById('detailsLastMissionDate').textContent = employee.lastMissionDate;
             document.getElementById('detailsProbation').checked = employee.probation;
             document.getElementById('detailsProbation').disabled = !isAdmin;
@@ -970,26 +1019,6 @@
                 `;
                 missionsTableBody.appendChild(row);
             });
-
-            // Calculer et afficher les kilomètres mensuels
-            const monthlyKm = calculateMonthlyKilometers(sortedMissions);
-            document.getElementById('monthlyKilometers').innerHTML = Object.entries(monthlyKm)
-                .map(([month, km]) => `${month}: ${km} km`)
-                .join('<br>');
-
-            // Afficher le modal
-            $('#employeeDetailsModal').modal('show');
-        }
-
-        function calculateMonthlyKilometers(missions) {
-            const monthlyKm = {};
-            missions.forEach(mission => {
-                const date = new Date(mission.date);
-                const monthYear = `${date.toLocaleString('fr-FR', { month: 'long', year: 'numeric' })}`;
-                monthlyKm[monthYear] = (monthlyKm[monthYear] || 0) + mission.kilometers;
-            });
-            return monthlyKm;
-        }
 
         // Fonctions pour éditer et supprimer les missions
         function editMission(pseudo, index) {
